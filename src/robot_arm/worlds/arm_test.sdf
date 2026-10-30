@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- Gazebo Ignition (Fortress) test world: same scene as arm_test.world.
+<!-- Gazebo Ignition (Fortress) test world: same scene as arm_test.world (base plate on a 0.40 m pedestal).
      Ignition needs the physics / user-commands / scene-broadcaster systems listed explicitly. -->
 <sdf version="1.8">
   <world name="arm_test">

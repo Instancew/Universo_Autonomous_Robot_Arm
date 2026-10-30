@@ -22,7 +22,8 @@
 
   <xacro:include filename="$(find robot_arm)/description/urdf/robot_arm.urdf"/>
 
-  <!-- World anchor and pedestal (stands in for the rover deck). Its top is base_link. -->
+  <!-- World anchor and pedestal (stands in for the rover deck). The base plate (8 mm thick) sits on its top;
+       base_link is the top face of the base plate, 8 mm above the pedestal top. -->
   <link name="world"/>
   <joint name="world_to_mount" type="fixed">
     <parent link="world"/>
@@ -50,7 +51,7 @@
   <joint name="mount_to_base" type="fixed">
     <parent link="sim_mount"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.008" rpy="0 0 0"/>
   </joint>
 
   <!-- ros2_control: same joints and interfaces in every simulator -->

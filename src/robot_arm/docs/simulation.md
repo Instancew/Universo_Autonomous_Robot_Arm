@@ -17,7 +17,7 @@ sudo apt install ros-humble-ros-gz ros-humble-ign-ros2-control                  
 ## 2. Build
 
 ```bash
-cd ~/autonomous_arm_ws
+cd ~/final_autonomous_arm_ws
 source /opt/ros/humble/setup.bash
 colcon build --symlink-install --packages-select robot_arm robot_arm_moveit_config
 source install/setup.bash
@@ -32,7 +32,7 @@ ros2 launch robot_arm simulation.launch.py simulator:=ignition    # Gazebo Ignit
 ```
 
 Options: `joystick:=false` (no controller), `rviz:=false` (Gazebo without RViz),
-`mount_height:=0.4` (pedestal height in Gazebo, metres).
+`mount_height:=0.4` (pedestal height in Gazebo, metres; the 8 mm base plate sits on top, so base_link is 8 mm higher).
 
 Single pieces, if you prefer separate terminals:
 
@@ -53,8 +53,8 @@ ros2 launch robot_arm teleop.launch.py                     # add use_sim_time:=t
 | axis 4 | right stick up/down | right stick up/down | elbow (up = raise forearm) |
 | button 0 (+ enable) | A | Cross | go to home pose |
 
-Speeds are the real actuator speeds (shoulder 0.042 rad/s = 2.4 deg/s, elbow 0.0355 rad/s = 2.0 deg/s),
-so the arm moves slowly on purpose. For a quicker simulation set `speed_scale` in `config/joystick.yaml`.
+Speeds are the actuator speeds from the URDF (shoulder 0.042 rad/s = 2.4 deg/s, elbow 0.0355 rad/s = 2.0 deg/s;
+carried over from the previous arm until the actuator mounting is confirmed), so the arm moves slowly on purpose. For a quicker simulation set `speed_scale` in `config/joystick.yaml`.
 Joint limits are read from the URDF; the teleop never commands outside them.
 
 If a stick moves the wrong joint or direction: run `ros2 topic echo /joy`, move the stick, and set the
@@ -62,10 +62,11 @@ matching `axis_*` number or flip the `scale_*` sign in `config/joystick.yaml`.
 
 ## 5. What is and is not simulated
 
-- Simulated: the 3 arm joints with their real limits and speeds, the arm geometry and collisions,
-  a 0.40 m pedestal (stands in for the rover deck) and a table with two target cubes (Gazebo worlds).
-- Not simulated: the 3 gripper DOFs (not in the CAD/URDF yet) and the linear actuators themselves
-  (the joints are moved directly, at the speed the actuators allow).
+- Simulated: the 3 arm joints with their real limits and speeds, the arm geometry and collisions (CAD meshes
+  of the 30 Oct export), a 0.40 m pedestal (stands in for the rover deck) and a table with two target cubes
+  (Gazebo worlds).
+- Not simulated: the 3 gripper DOFs (the gripper is one rigid part in the URDF) and the linear actuators
+  themselves (the joints are moved directly, at the speed the actuators allow).
 
 ## Files
 

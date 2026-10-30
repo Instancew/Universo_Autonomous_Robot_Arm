@@ -285,7 +285,8 @@ def main(argv=None):
     pe = sub.add_parser('endstop')
     pe.add_argument('--source', choices=['manual', 'stm32'], default='manual')
     pt = sub.add_parser('tip')
-    pt.add_argument('xyz_mm', type=float, nargs=3, help='tape-measured arm_tip in base_link (mm)')
+    pt.add_argument('xyz_mm', type=float, nargs=3, help='tape-measured arm_tip in base_link (mm): x forward and y left from the base yaw axis, '
+                         'z up from the top face of the base plate')
     pt.add_argument('--source', choices=['manual', 'stm32'], default='manual')
     sub.add_parser('simulate')
     a = ap.parse_args(argv)

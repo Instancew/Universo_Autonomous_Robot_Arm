@@ -16,7 +16,8 @@ verbatim. Every CAD link pose in this URDF equals the export's to 1e-11 m at the
 The gripper has no joints in this export (one rigid link `gripper__1` together with the forearm).
 
 ## Frames
-- `base_link`: x forward, y left (along the shoulder axis), z up; origin on the yaw axis at the base-plate part origin.
+- `base_link`: x forward, y left (along the shoulder axis), z up; origin on the yaw axis at the base-plate part origin,
+  which is the **top face** of the 8 mm base plate. The plate's bottom face (rover mounting face) is at z = −8.00 mm.
 - `arm_tip`: x along the forearm extrusion (outward), y left, z = x × y.
 
 ## Joint conventions
@@ -52,8 +53,18 @@ Upper-arm elevation 8.70° … 78.70°; elbow inner angle 46.61° … 166.72°.
 Shoulder actuator (near upper-arm pin): 313.24 mm at the upper limit, 493.02 mm at the lower limit
 (full retraction 300 mm at q_shoulder −7.661°, full extension 500 mm at −86.768°).
 
-## Still to confirm (needs the STL meshes)
-- The 34 mesh files go in `description/meshes/` with the names used in this URDF.
-- Elbow actuator forearm pin → elbow actuator length over the elbow range.
-- base_link height: the base-plate part origin is probably the plate's bottom face (its centre of mass is 3.0 mm above it).
-- MoveIt collision matrix (SRDF) must be recomputed from the meshes.
+## Checked with the meshes (34 STL files from the same Onshape export, in `description/meshes/`)
+- Base plate: 340 × 190 × 8 mm; base_link is its top face, the bottom face is 8.00 mm lower.
+  Thrust-bearing housing on top: Ø146 × 29.5 mm (base yaw bearing face 29.50 mm above base_link).
+- arm_tip is the centre of the forearm extrusion end face (within 0.1 mm). Forearm 3030 extrusion: 560.0 mm long.
+  Upper-arm 3030 extrusions: 2 × 500 mm.
+- Shoulder axle (Ø12 × 140 mm) lies on the shoulder axis within 0.001 mm; elbow bearings on the elbow axis within 0.001 mm.
+  One turntable bearing bore is 0.25 mm and one upper-arm bearing bore 0.35 mm off the axle line (CAD placement).
+- Self-collision over the joint limits (3324 sampled poses): only joined links touch (base plate–turntable,
+  turntable–upper arm, upper arm–forearm). Closest approach of the others: upper arm to base plate about 35 mm,
+  forearm/gripper to base plate about 237 mm, forearm/gripper to turntable about 312 mm.
+
+## Still open
+- Elbow actuator: no pair of mounting holes found in the CAD gives a 300–500 mm actuator over the elbow range
+  (forearm lever hole 96.05 mm from the elbow axis + upper-arm pin gives 191–349 mm). The CAD team must say
+  which holes the elbow actuator uses.

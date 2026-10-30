@@ -2,7 +2,8 @@
 
 URDF of 30 Oct: the joint limits are the Onshape mate limits. Pin centres are the CAD M6 pin centre lines.
 1. Shoulder geometry check: over the whole shoulder range the actuator stays within 300..500 mm.
-2. Elbow geometry check: SKIPPED until the forearm pin is known (needs the STL meshes).
+2. Elbow geometry check: SKIPPED until the CAD team confirms which holes the elbow actuator uses
+   (no hole pair in the meshes gives 300..500 mm over the elbow range; see description/URDF_CHANGES.md).
 3. Code check: actuator_conversion.actuator_lengths() matches the geometry (skipped until it exists
    and the forearm pin is known).
 """
@@ -30,10 +31,10 @@ ELBOW_AXIS = np.array([0.1031763, 0.6141142])
 BASE_PIN = np.array([-0.1343009, 0.1464861])          # turntable riser, shoulder actuator lower pin (fixed)
 UPPER_PIN_SHOULDER = np.array([0.0666603, 0.3285619])  # upper arm, pin nearer the shoulder (264.06 mm along)
 UPPER_PIN_ELBOW = np.array([0.0659781, 0.3585541])     # upper arm, pin further out (294.05 mm along)
-FOREARM_PIN = None                                     # forearm, elbow actuator upper pin - needs meshes
+FOREARM_PIN = None                                     # forearm, elbow actuator upper pin - to be confirmed by CAD team
 
 ELBOW_KNOWN = FOREARM_PIN is not None
-needs_forearm_pin = pytest.mark.skipif(not ELBOW_KNOWN, reason='forearm actuator pin not known yet (needs STL meshes)')
+needs_forearm_pin = pytest.mark.skipif(not ELBOW_KNOWN, reason='elbow actuator pin holes not confirmed by the CAD team yet')
 
 
 def _rot(v, a):

@@ -33,7 +33,7 @@ def test_joints_yaml_matches_urdf():
 
 
 def test_calibration_end_stops_not_inside_urdf_limits():
-    # URDF v2 limits are the CAD mate limits; the actuator end stops must be at or beyond them
+    # The URDF limits are the CAD mate limits; the actuator end stops must be at or beyond them
     # (an end stop strictly inside the range would mean the URDF allows angles the actuator cannot reach).
     r = yaml.safe_load((CONFIG / 'calibration.yaml').read_text())['reference']
     checked = 0

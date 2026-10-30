@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <!-- Gazebo Classic test world: ground, light, a table in reach with two target cubes.
-     Arm base_link sits on the 0.40 m pedestal at the origin; +x is the arm's forward direction. -->
+     The arm's 8 mm base plate sits on the 0.40 m pedestal at the origin (base_link = plate top, 0.408 m);
+     +x is the arm's forward direction. -->
 <sdf version="1.6">
   <world name="arm_test">
     <include><uri>model://sun</uri></include>

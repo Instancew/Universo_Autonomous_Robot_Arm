@@ -45,7 +45,7 @@ class JoyTeleop(Node):
         self.speed_scale = float(p('speed_scale', 1.0).value)
         self.margin = float(p('limit_margin_rad', 0.01).value)
         self.base_cap = float(p('base_max_velocity', 0.5).value)
-        self.home = dict(zip(JOINTS, [float(v) for v in p('home_position', [0.0, -0.06, 0.97]).value]))
+        self.home = dict(zip(JOINTS, [float(v) for v in p('home_position', [0.0, -0.24, 2.29]).value]))
 
         self.specs = None
         self.current = None

@@ -1,404 +1,1118 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <!--
-  robot_arm.urdf : ROS 2 (Humble) version of the Onshape export "robotic_arm_cad.urdf".
-  CAD GEOMETRY IS UNCHANGED: every mesh, mesh origin, inertial and CAD joint transform is copied verbatim.
+  robot_arm.urdf - ROS 2 description of the Universo 6-DOF arm (3-DOF arm; the gripper is one rigid link here).
+  Generated from the Onshape export "Robot_ArmNew" of 30 Oct 2026 (onshape-to-robot). CAD links, meshes,
+  mesh origins and inertials are copied verbatim; only the mesh paths and the joint frames changed.
+  See ../URDF_CHANGES.md.
 
-  Changes vs. the Onshape export:
-   1. Mesh paths  package://robotic_arm_cad/meshes/  ->  package://robot_arm/description/meshes/
-   2. New base_link (REP-103: x forward, y left, z up; origin = bottom face of base block, on the yaw axis)
-      and new base_joint (continuous yaw). The CAD has no turntable, so this joint is not in the export.
-      Yaw axis passes through the centre of the base block (ra_5) - confirmed. Slip ring -> true continuous joint.
-   3. The CAD root joint (fixed_node_to_root_joint, 0.18 / 0.49 deg alignment noise) is replaced by an
-      exact rotation. Link "root" is removed.
-   4. revolute_1 -> shoulder_joint, revolute_2 -> elbow_joint (same origins and axes as the CAD).
-   5. Joint limits now come from the linear actuators (pin-to-pin 300 mm retracted .. 500 mm extended, team value).
-      Datasheet stroke tolerance is +/-3 mm.
-      Re-compute if the actuators or mount points change.
-   6. <collision> added to every link (same mesh as visual) - required by MoveIt collision checking.
-   7. New frame arm_tip = centre of the forearm extrusion end face (430.0 mm from elbow axis) = IK target.
+  Frames (REP-103):
+   base_link : on the base yaw axis, at the base-plate part origin. x forward (direction the arm reaches at
+               base_joint = 0), y left (along the shoulder axis), z up.
+   arm_tip   : centre of the gripper mounting face (gripper base-plate origin) = IK target.
+               x = along the forearm extrusion (outward), y = left, z = x cross y.
 
-  Joint conventions (zero = CAD export pose):
-   base_joint     : + = counter-clockwise seen from above.
-   shoulder_joint : 0 = upper arm vertical;  negative = leaning forward.  Upper-arm elevation = 90 deg + q.
-   elbow_joint    : 0 = elbow inner angle 125.0 deg (forearm 35.0 deg above horizontal when upper arm is vertical); + = forearm folds down.
-                    Forearm elevation = 35.0 deg + q_shoulder - q_elbow ; elbow inner angle = 125.0 deg - q_elbow.
-  Link lengths: shoulder axis -> elbow axis = 540.0 mm ; elbow axis -> arm_tip = 430.0 mm.
-  Shoulder axis is 92.5 mm in front of the base-block origin and 20.0 mm above its bottom face.
+  Joint conventions:
+   base_joint     : continuous (slip ring). + = counter-clockwise seen from above.
+   shoulder_joint : 0 = upper arm (shoulder axis -> elbow axis line) vertical; negative = leaning forward.
+                    Upper-arm elevation = 90 deg + q_shoulder.
+   elbow_joint    : 0 = arm straight (elbow -> arm_tip line in line with the upper arm); + = forearm folds down.
+                    Forearm (elbow -> arm_tip line) elevation = 90 deg + q_shoulder - q_elbow.
+                    Elbow inner angle = 180 deg - q_elbow.
+   Export joint values: l1End = q_shoulder - (-11.303 deg), L2 = q_elbow - (133.388 deg).
+
+  Geometry (base_link, mm):
+   shoulder axis : x 103.1763, z 64.5001
+   shoulder -> elbow axis : 549.6141
+   elbow axis -> arm_tip  : 476.6496 (in the arm plane)
+   arm centre plane       : y = -1.9990 (arm_tip is this far to the side of the yaw axis at base_joint = 0)
+   forearm extrusion is 5.2960 deg from the elbow -> arm_tip line
+   upper-arm extrusion is -1.3029 deg from the shoulder -> elbow line
+
+  Limits (Onshape mate limits: l1End -70..0 deg, L2 -120.104..0 deg):
+   shoulder_joint : [-81.303, -11.303] deg  (upper-arm elevation 8.697 .. 78.697 deg)
+   elbow_joint    : [13.284, 133.388] deg  (elbow inner angle 46.612 .. 166.716 deg)
+   Shoulder/elbow effort and velocity are carried over from the previous model (the export has placeholders 10 / 10).
 -->
 <robot name="robot_arm">
 
-  <!-- ===================== NEW: base frames and base yaw joint ===================== -->
+  <!-- ===================== base (fixed to the rover) ===================== -->
   <link name="base_link"/>
 
+  <joint name="base_link_to_base_plate" type="fixed">
+    <parent link="base_link"/>
+    <child link="robotic_arm_base_plate__boss_extrude2"/>
+    <origin xyz="-0.00103225147681 -0.00187121695701 -0.0116560524401" rpy="-0.0116729648662 0.00889276675799 1.45303552018"/>
+  </joint>
+
+  <!-- Link robotic_arm_base_plate__boss_extrude2 -->
+  <link name="robotic_arm_base_plate__boss_extrude2">
+    <inertial>
+      <origin xyz="0.00184915 -0.000976443 0.0146596" rpy="0 0 0"/>
+      <mass value="1.89084"/>
+      <inertia ixx="0.0145685" ixy="-5.86519e-05" ixz="-4.25492e-05" iyy="0.00525366" iyz="-0.000164209" izz="0.0192736"/>
+    </inertial>
+    <!-- Part thrust_bearing_d_enclosure__cirpattern1 -->
+    <visual>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="1.58253 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/thrust_bearing_d_enclosure__cirpattern1.stl"/>
+      </geometry>
+      <material name="thrust_bearing_d_enclosure__cirpattern1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="1.58253 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/thrust_bearing_d_enclosure__cirpattern1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part robotic_arm_base_plate__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="-1.55907 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/robotic_arm_base_plate__boss_extrude2.stl"/>
+      </geometry>
+      <material name="robotic_arm_base_plate__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="-1.55907 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/robotic_arm_base_plate__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ===================== base yaw (export "360": revolute +/-180 deg -> continuous, slip ring) ===================== -->
   <joint name="base_joint" type="continuous">
     <parent link="base_link"/>
     <child link="base_yaw_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <!-- RMCS-5029: 70 kgcm rated = 6.86 N m, 30 rpm at output = 3.14 rad/s (if direct drive) -->
+    <dynamics damping="0.0" friction="0.0"/>
     <limit effort="6.86" velocity="3.14"/>
   </joint>
 
   <link name="base_yaw_link"/>
 
-  <joint name="base_yaw_to_base_block" type="fixed">
+  <joint name="base_yaw_to_turntable" type="fixed">
     <parent link="base_yaw_link"/>
-    <child link="ra_5__boss_extrude4"/>
-    <!-- yaw axis assumed at base-block centre (part x = -0.005) -> part origin is 5.0 mm forward -->
-    <origin xyz="0.005 0 0" rpy="1.570796326794897 0 0"/>
+    <child link="ra_3__boss_extrude1"/>
+    <origin xyz="0 0 0.029500076063" rpy="3.14159265359 0 3.61739869449e-06"/>
   </joint>
 
-  <!-- ===================== CAD links (unchanged geometry, collision added) ===================== -->
-  <link name="3030_extrusion_robotic_arm_l1__boss_extrude1">
-    <inertial>
-      <mass value="0.387141"/>
-      <origin xyz="-0.0150005 -0.179999 -0.0149899" rpy="0 -0 0"/>
-      <inertia ixx="0.00809803" ixy="4.1151e-10" ixz="5.45636e-11" iyy="6.52627e-05" iyz="3.62357e-10" izz="0.00809803"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.0150005 0.0200024 -0.0149897" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L1__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.0150005 0.0200024 -0.0149897" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L1__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="3030_extrusion_robotic_arm_l1__boss_extrude1_1">
-    <inertial>
-      <mass value="0.387141"/>
-      <origin xyz="0.0150006 0.249999 0.0125004" rpy="0 -0 0"/>
-      <inertia ixx="0.00809803" ixy="4.1151e-10" ixz="5.45636e-11" iyy="6.52627e-05" iyz="3.62357e-10" izz="0.00809803"/>
-    </inertial>
-    <visual>
-      <origin xyz="0.0150005 0.45 0.0125005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L1__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="0.0150005 0.45 0.0125005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L1__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="3030_extrusion_robotic_arm_l2__boss_extrude1">
-    <inertial>
-      <mass value="0.317455"/>
-      <origin xyz="-0.0125005 0.204999 0.0150004" rpy="0 -0 0"/>
-      <inertia ixx="0.00447376" ixy="2.91973e-10" ixz="4.32629e-11" iyy="5.35154e-05" iyz="2.2992e-10" izz="0.00447376"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.0125005 0.36 0.0150005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L2__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.0125005 0.36 0.0150005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/_3030_extrusion_robotic_arm_L2__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="-0.0332221 -0.0232623 0.0025" rpy="0 0 -0.959931"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.0368618 -0.0258109 0" rpy="0 0 -0.959931"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.0368618 -0.0258109 0" rpy="0 0 -0.959931"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1_1">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="0.0125108 -0.020559 -0.0025" rpy="0 -0 0"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="0.0125108 -0.0250024 -0.005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="0.0125108 -0.0250024 -0.005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1_2">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="-0.015 0.0494434 0.0025" rpy="0 -0 0"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.015 0.045 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.015 0.045 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1_3">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="8.09746e-18 -0.0405566 0.0075038" rpy="0 -0 0"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="6.93889e-18 -0.045 0.0050038" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="6.93889e-18 -0.045 0.0050038" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1_4">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="8.09746e-18 -0.0405566 0.0075038" rpy="0 -0 0"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="6.93889e-18 -0.045 0.0050038" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="6.93889e-18 -0.045 0.0050038" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_1__cut_extrude1_5">
-    <inertial>
-      <mass value="0.0399885"/>
-      <origin xyz="0.015 0.0494434 -0.0025" rpy="0 -0 0"/>
-      <inertia ixx="3.37091e-05" ixy="0" ixz="0" iyy="3.09384e-06" iyz="0" izz="3.66363e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="0.015 0.045 -0.005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="0.015 0.045 -0.005" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_1__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
+  <!-- Link ra_3__boss_extrude1 -->
   <link name="ra_3__boss_extrude1">
     <inertial>
-      <mass value="0.0430675"/>
-      <origin xyz="1.44935e-35 0 1.16945e-19" rpy="0 -0 0"/>
-      <inertia ixx="7.07311e-05" ixy="0" ixz="0" iyy="7.75214e-07" iyz="0" izz="7.07311e-05"/>
+      <origin xyz="-0.0303207 -2.10884e-05 -0.035927" rpy="0 0 0"/>
+      <mass value="0.987018"/>
+      <inertia ixx="0.0023999" ixy="-2.17346e-06" ixz="-0.00174224" iyy="0.00885948" iyz="-1.69646e-06" izz="0.00821911"/>
     </inertial>
+    <!-- Part ra_base_height_inc_actuator_part__boss_extrude5 -->
     <visual>
-      <origin xyz="0 -0.07 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_3__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
+      <origin xyz="-0.125 -0.022 -0.005" rpy="-1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+      <material name="ra_base_height_inc_actuator_part__boss_extrude5_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
     </visual>
     <collision>
-      <origin xyz="0 -0.07 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_3__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
+      <origin xyz="-0.125 -0.022 -0.005" rpy="-1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_6_od_15_th_5_bearing_619__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.134301 0.027 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+      <material name="id_6_od_15_th_5_bearing_619__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 0.027 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.134301 0.0376014 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 0.0376014 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_plate_laser_cut__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.125 0.0175 -0.035" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_base_plate_laser_cut__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.125 0.0175 -0.035" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.103176 -0.0255 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103176 -0.0255 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_3__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.103176 -0.07 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_3__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_3__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103176 -0.07 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_3__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_plate_laser_cut__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.125 -0.0255 -0.035" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_base_plate_laser_cut__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.125 -0.0255 -0.035" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.103 0.0255 -0.0351761" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103 0.0255 -0.0351761" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_6_od_15_th_5_bearing_619__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="-0.134301 -0.025 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+      <material name="id_6_od_15_th_5_bearing_619__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 -0.025 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_5__cirpattern1 -->
+    <visual>
+      <origin xyz="0 -0 0" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_5__cirpattern1.stl"/>
+      </geometry>
+      <material name="ra_5__cirpattern1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_5__cirpattern1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_height_inc_actuator_part__boss_extrude5_2 -->
+    <visual>
+      <origin xyz="-0.125 0.03 -0.005" rpy="-1.5708 0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+      <material name="ra_base_height_inc_actuator_part__boss_extrude5_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.125 0.03 -0.005" rpy="-1.5708 0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
     </collision>
   </link>
 
-  <link name="ra_3__boss_extrude1_1">
-    <inertial>
-      <mass value="0.0430675"/>
-      <origin xyz="-1.01455e-34 -0.07 1.16945e-19" rpy="0 -0 0"/>
-      <inertia ixx="7.07311e-05" ixy="0" ixz="0" iyy="7.75214e-07" iyz="0" izz="7.07311e-05"/>
-    </inertial>
-    <visual>
-      <origin xyz="-1.15948e-34 -0.14 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_3__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-1.15948e-34 -0.14 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_3__Boss_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_4__cut_extrude1">
-    <inertial>
-      <!-- NOTE: CAD mass 3.4e-05 kg looks wrong (identical part ra_4 elsewhere = 0.0927 kg): material missing in CAD. Kinematics unaffected. -->
-      <mass value="3.40768e-05"/>
-      <origin xyz="-0.06 0.015 0.00463848" rpy="0 -0 0"/>
-      <inertia ixx="3.14514e-09" ixy="0" ixz="0" iyy="3.5513e-08" iyz="0" izz="3.69857e-08"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.06 0.015 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.06 0.015 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_4__cut_extrude1_1">
-    <inertial>
-      <mass value="0.092689"/>
-      <origin xyz="-0.0575108 0.230011 0.00463848" rpy="0 -0 0"/>
-      <inertia ixx="8.55479e-06" ixy="0" ixz="0" iyy="9.65953e-05" iyz="0" izz="0.000100601"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.0575108 0.230011 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1_1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.0575108 0.230011 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1_1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_4__cut_extrude1_2">
-    <inertial>
-      <mass value="0.092689"/>
-      <origin xyz="-0.0575108 0.150001 0.00463848" rpy="0 -0 0"/>
-      <inertia ixx="8.55479e-06" ixy="0" ixz="0" iyy="9.65953e-05" iyz="0" izz="0.000100601"/>
-    </inertial>
-    <visual>
-      <origin xyz="-0.0575108 0.150001 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1_1.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="-0.0575108 0.150001 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_4__Cut_Extrude1_1.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <link name="ra_5__boss_extrude4">
-    <inertial>
-      <mass value="0.367037"/>
-      <origin xyz="-0.0202165 0.0117307 -6.25258e-19" rpy="0 -0 0"/>
-      <inertia ixx="0.000372043" ixy="0.000248333" ixz="0" iyy="0.00192692" iyz="0" izz="0.0018393"/>
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_5__Boss_Extrude4.stl" scale="1 1 1"/></geometry>
-      <material name="cad_grey"><color rgba="0.792157 0.819608 0.933333 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 -0 0"/>
-      <geometry><mesh filename="package://robot_arm/description/meshes/ra_5__Boss_Extrude4.stl" scale="1 1 1"/></geometry>
-    </collision>
-  </link>
-
-  <!-- ===================== CAD fixed joints (unchanged) ===================== -->
-  <joint name="fastened_1" type="fixed">
-    <origin xyz="0.0925 0.02 -1.73472e-18" rpy="1.5708 -4.55191e-15 -1.5708"/>
-    <parent link="ra_5__boss_extrude4"/>
-    <child link="ra_3__boss_extrude1"/>
-  </joint>
-  <joint name="fastened_10" type="fixed">
-    <origin xyz="0 -0.14 -1.38778e-17" rpy="0 1.5708 1.5708"/>
-    <parent link="ra_3__boss_extrude1_1"/>
-    <child link="ra_1__cut_extrude1_3"/>
-  </joint>
-  <joint name="fastened_11" type="fixed">
-    <origin xyz="-6.93889e-18 0.429998 0.0274903" rpy="0 1.5708 -1.10341e-14"/>
-    <parent link="3030_extrusion_robotic_arm_l1__boss_extrude1_1"/>
-    <child link="ra_1__cut_extrude1_5"/>
-  </joint>
-  <joint name="fastened_12" type="fixed">
-    <origin xyz="0.015 0.09 -0.0100038" rpy="-1.5708 1.27676e-15 -1.5708"/>
-    <parent link="ra_1__cut_extrude1_5"/>
-    <child link="ra_3__boss_extrude1_1"/>
-  </joint>
-  <joint name="fastened_13" type="fixed">
-    <origin xyz="0.0025 6.245e-17 -0.0025" rpy="3.14159 -4.26083e-17 -3.14159"/>
-    <parent link="3030_extrusion_robotic_arm_l1__boss_extrude1_1"/>
-    <child link="ra_4__cut_extrude1_2"/>
-  </joint>
-  <joint name="fastened_2" type="fixed">
-    <origin xyz="6.93889e-18 -0.359995 2.77556e-17" rpy="0 -1.5708 3.14159"/>
-    <parent link="3030_extrusion_robotic_arm_l1__boss_extrude1"/>
-    <child link="ra_1__cut_extrude1_2"/>
-  </joint>
-  <joint name="fastened_3" type="fixed">
-    <origin xyz="-0.0250011 2.77556e-16 0.0300011" rpy="3.14159 -4.00992e-16 1.97065e-15"/>
-    <parent link="3030_extrusion_robotic_arm_l2__boss_extrude1"/>
-    <child link="ra_1__cut_extrude1_1"/>
-  </joint>
-  <joint name="fastened_4" type="fixed">
-    <origin xyz="0.0025 0.190011 0.0749991" rpy="0 -1.5708 3.14159"/>
-    <parent link="3030_extrusion_robotic_arm_l2__boss_extrude1"/>
-    <child link="ra_4__cut_extrude1"/>
-  </joint>
-  <joint name="fastened_5" type="fixed">
-    <origin xyz="-0.023557 -0.0012219 0.005" rpy="1.45953e-16 -2.79315e-16 2.18166"/>
-    <parent link="ra_1__cut_extrude1"/>
-    <child link="3030_extrusion_robotic_arm_l2__boss_extrude1"/>
-  </joint>
-  <joint name="fastened_7" type="fixed">
-    <origin xyz="-0.0125108 -0.0199976 0.0100038" rpy="0 -1.5708 3.14159"/>
-    <parent link="ra_1__cut_extrude1_4"/>
-    <child link="3030_extrusion_robotic_arm_l1__boss_extrude1_1"/>
-  </joint>
-  <joint name="fastened_8" type="fixed">
-    <origin xyz="0.0025 6.245e-17 -0.0025" rpy="3.14159 -2.79017e-16 3.14159"/>
-    <parent link="3030_extrusion_robotic_arm_l1__boss_extrude1_1"/>
-    <child link="ra_4__cut_extrude1_1"/>
-  </joint>
-  <joint name="fastened_9" type="fixed">
-    <origin xyz="0.015 -0.09 0.0100038" rpy="0 1.5708 6.48353e-17"/>
-    <parent link="ra_1__cut_extrude1_3"/>
-    <child link="3030_extrusion_robotic_arm_l1__boss_extrude1"/>
-  </joint>
-
-  <!-- ===================== Arm joints ===================== -->
-  <!-- shoulder_joint (was "revolute_1" in the Onshape export; origin and axis unchanged) -->
-  <!-- upper = -1.285 deg : actuator fully retracted (300 mm pin-to-pin). 0 deg (vertical) needs 296.2 mm = impossible. -->
-  <!-- lower = -90.0 deg : CAD limit (arm horizontal, actuator 450.7 mm). Actuator can never reach 500 mm here: -->
-  <!--         toggle point at 452.1 mm / -98.99 deg. Near -90 deg the lever arm is only 17.5 mm (3.3 deg per mm). -->
-  <!-- velocity = 7 mm/s / 166.6 mm (largest lever arm) ; effort = 1000 N x 166.6 mm. -->
+  <!-- ===================== shoulder (export "l1End") ===================== -->
   <joint name="shoulder_joint" type="revolute">
-    <origin xyz="5.20417e-17 -0.07 1.11022e-16" rpy="0 -1.5708 -1.5708"/>
-    <parent link="ra_3__boss_extrude1"/>
-    <child link="ra_1__cut_extrude1_4"/>
-    <axis xyz="-0 -0 1"/>
-    <limit lower="-1.570796" upper="-0.022426" effort="166.6" velocity="0.0420"/>
+    <parent link="base_yaw_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0.103176253217 0 0.064500076063" rpy="0 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-1.419011" upper="-0.197281" effort="166.6" velocity="0.0420"/>
   </joint>
 
-  <!-- elbow_joint (was "revolute_2" in the Onshape export; origin and axis unchanged) -->
-  <!-- lower = -8.574 deg : actuator fully extended (500 mm).  upper = 57.708 deg : fully retracted (300 mm). -->
-  <!-- velocity = 7 mm/s / 197.4 mm (largest lever arm) ; effort = 1000 N x 197.4 mm. -->
+  <link name="upper_arm_link"/>
+
+  <joint name="upper_arm_link_to_cad" type="fixed">
+    <parent link="upper_arm_link"/>
+    <child link="ra_4__boss_extrude1"/>
+    <origin xyz="0 -0.0699996267708 0" rpy="-1.57076882367 -1.54805202665 3.14156503256"/>
+  </joint>
+
+  <!-- Link ra_4__boss_extrude1 -->
+  <link name="ra_4__boss_extrude1">
+    <inertial>
+      <origin xyz="0.278901 -0.00564188 -0.0675572" rpy="0 0 0"/>
+      <mass value="1.58078"/>
+      <inertia ixx="0.00447972" ixy="0.000722581" ixz="-0.000189486" iyy="0.0500233" iyz="4.80005e-06" izz="0.0461324"/>
+    </inertial>
+    <!-- Part 3030_extrusion_robotic_arm_l1__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.469824 -0.00999947 -0.0230005" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l1__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.469824 -0.00999947 -0.0230005" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part c_clamp_plate_actuator_mounting__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.279824 -0.00599892 -0.128" rpy="-3.14159 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="c_clamp_plate_actuator_mounting__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 -0.00599892 -0.128" rpy="-3.14159 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1 -->
+    <visual>
+      <origin xyz="0.264824 0.0255011 -0.0570005" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0255011 -0.0570005" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.0448239 0.01 -0.136" rpy="0 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0448239 0.01 -0.136" rpy="0 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_2 -->
+    <visual>
+      <origin xyz="0.0448239 0.01 -0.008" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0448239 0.01 -0.008" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_4__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.279824 0.00500108 -0.068" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_4__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_4__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 0.00500108 -0.068" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_4__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_2 -->
+    <visual>
+      <origin xyz="0.294824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 3030_extrusion_robotic_arm_l1__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.469824 -0.00999947 -0.112999" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l1__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.469824 -0.00999947 -0.112999" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_3 -->
+    <visual>
+      <origin xyz="0.504648 -0.0224995 -0.136" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.504648 -0.0224995 -0.136" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part c_clamp_plate_actuator_mounting__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.279824 -0.00599892 9.4e-09" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="c_clamp_plate_actuator_mounting__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 -0.00599892 9.4e-09" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_3 -->
+    <visual>
+      <origin xyz="0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.294824 0.0305011 -0.0279995" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0305011 -0.0279995" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_3 -->
+    <visual>
+      <origin xyz="0.294824 0.0255011 -0.0570005" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0255011 -0.0570005" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_4 -->
+    <visual>
+      <origin xyz="0.264824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1_3 -->
+    <visual>
+      <origin xyz="0.264824 0.0305011 -0.0279995" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0305011 -0.0279995" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_4 -->
+    <visual>
+      <origin xyz="-0.000352225 0 -0.136" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.000352225 0 -0.136" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_3__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.549472 -0.0124995 0.00199893" rpy="-1.5708 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_3__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_3__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549472 -0.0124995 0.00199893" rpy="-1.5708 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_3__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_5 -->
+    <visual>
+      <origin xyz="0.549472 -0.0124995 -0.008" rpy="1.5708 -0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_5_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549472 -0.0124995 -0.008" rpy="1.5708 -0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_4 -->
+    <visual>
+      <origin xyz="0.504648 -0.0224995 -0.008" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.504648 -0.0224995 -0.008" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ===================== elbow (export "L2") ===================== -->
   <joint name="elbow_joint" type="revolute">
-    <origin xyz="-1.44329e-15 -0.05 6.93889e-17" rpy="0 1.5708 -1.5708"/>
-    <parent link="ra_3__boss_extrude1_1"/>
-    <child link="ra_1__cut_extrude1"/>
-    <axis xyz="0 0 -1"/>
-    <limit lower="-0.149650" upper="1.007196" effort="197.4" velocity="0.0355"/>
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 0 0.549614094642" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0.231847" upper="2.328057" effort="197.4" velocity="0.0355"/>
   </joint>
 
-  <!-- ===================== NEW: IK target frame ===================== -->
-  <!-- arm_tip: centre of the forearm (3030 L2) free end face = gripper mounting face.
-       x = along forearm (outward), y = left, z = up in the arm plane. -->
+  <link name="forearm_link"/>
+
+  <joint name="forearm_link_to_cad" type="fixed">
+    <parent link="forearm_link"/>
+    <child link="gripper__1"/>
+    <origin xyz="0 0.0220018170047 0" rpy="-1.57078803357 -1.47836752891 -5.98423428561e-06"/>
+  </joint>
+
+  <!-- Link gripper__1 -->
+  <link name="gripper__1">
+    <inertial>
+      <origin xyz="0.45374 -0.0659326 -0.0340334" rpy="0 0 0"/>
+      <mass value="2.52775"/>
+      <inertia ixx="0.0237637" ixy="0.00028306" ixz="0.0042694" iyy="0.124298" iyz="-0.00337704" izz="0.125507"/>
+    </inertial>
+    <!-- Part part1__cut_extrude2 -->
+    <visual>
+      <origin xyz="-0.0572971 0.00600598 0.000999998" rpy="-3.14159 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/part1__cut_extrude2.stl"/>
+      </geometry>
+      <material name="part1__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0572971 0.00600598 0.000999998" rpy="-3.14159 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/part1__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 3030_extrusion_robotic_arm_l2__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.0353855 -0.0439935 -0.0240005" rpy="-1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l2__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l2__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0353855 -0.0439935 -0.0240005" rpy="-1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/3030_extrusion_robotic_arm_l2__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_6 -->
+    <visual>
+      <origin xyz="-0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_6_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__2_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__2_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part grip_of_gripper__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.704514 -0.0941218 -0.106488" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/grip_of_gripper__boss_extrude2.stl"/>
+      </geometry>
+      <material name="grip_of_gripper__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.704514 -0.0941218 -0.106488" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/grip_of_gripper__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1 -->
+    <visual>
+      <origin xyz="0.31587 -0.345714 -0.105236" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.31587 -0.345714 -0.105236" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ms_rod_7_mm__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.312955 -0.366302 -0.0489174" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ms_rod_7_mm__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ms_rod_7_mm__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.312955 -0.366302 -0.0489174" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ms_rod_7_mm__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1_2 -->
+    <visual>
+      <origin xyz="0.324261 -0.354261 -0.12052" rpy="1.44963 0.0269747 -2.39977"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.324261 -0.354261 -0.12052" rpy="1.44963 0.0269747 -2.39977"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1_3 -->
+    <visual>
+      <origin xyz="0.325961 -0.357204 -0.0932705" rpy="-1.59797 -0.121117 2.3159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.325961 -0.357204 -0.0932705" rpy="-1.59797 -0.121117 2.3159"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__3_1 -->
+    <visual>
+      <origin xyz="0.316798 -0.36253 -0.0513516" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__3_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.316798 -0.36253 -0.0513516" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lovejoy_coupling__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.584887 -0.0513133 0.0929112" rpy="-1.53195 -0 2.97806"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/lovejoy_coupling__boss_extrude1.stl"/>
+      </geometry>
+      <material name="lovejoy_coupling__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.584887 -0.0513133 0.0929112" rpy="-1.53195 -0 2.97806"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/lovejoy_coupling__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1 -->
+    <visual>
+      <origin xyz="0.549121 -0.0500173 -0.0240005" rpy="3.14159 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1.stl"/>
+      </geometry>
+      <material name="ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549121 -0.0500173 -0.0240005" rpy="3.14159 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__1_1 -->
+    <visual>
+      <origin xyz="0.325155 -0.352247 -0.0391389" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__1_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.325155 -0.352247 -0.0391389" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part main_part__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.00150054" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/main_part__cut_extrude1.stl"/>
+      </geometry>
+      <material name="main_part__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.00150054" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/main_part__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__1_1_2 -->
+    <visual>
+      <origin xyz="0.315414 -0.369064 -0.0409735" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__1_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.315414 -0.369064 -0.0409735" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bevel_rotating__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.539254 -0.0483892 -0.0240005" rpy="-3.14159 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bevel_rotating__cut_extrude1.stl"/>
+      </geometry>
+      <material name="bevel_rotating__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.539254 -0.0483892 -0.0240005" rpy="-3.14159 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/bevel_rotating__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__2_1_2 -->
+    <visual>
+      <origin xyz="0.318362 -0.366449 -0.0510209" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__2_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.318362 -0.366449 -0.0510209" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_plate_gripper_bearing_housing__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.587847 -0.061013 -0.140912" rpy="-3.14159 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_plate_gripper_bearing_housing__boss_extrude2.stl"/>
+      </geometry>
+      <material name="side_plate_gripper_bearing_housing__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.587847 -0.061013 -0.140912" rpy="-3.14159 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_plate_gripper_bearing_housing__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part main_part__cut_extrude1_2 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.0515005" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/main_part__cut_extrude1.stl"/>
+      </geometry>
+      <material name="main_part__cut_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.0515005" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/main_part__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__3_1_2 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__3_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part base_plate__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.474615 -0.0439935 -0.0240005" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/base_plate__cut_extrude1.stl"/>
+      </geometry>
+      <material name="base_plate__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.474615 -0.0439935 -0.0240005" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/base_plate__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_motor_mounting__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 0.0634995" rpy="3.14159 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="side_motor_mounting__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 0.0634995" rpy="3.14159 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_motor_mounting__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.111501" rpy="-0 -0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="side_motor_mounting__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.111501" rpy="-0 -0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__5_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__5_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__5_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__5_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 120mm_lead_screw__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.583306 -0.0608935 -0.1569" rpy="1.5708 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/120mm_lead_screw__boss_extrude1.stl"/>
+      </geometry>
+      <material name="120mm_lead_screw__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.583306 -0.0608935 -0.1569" rpy="1.5708 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/120mm_lead_screw__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part gripper_arm__cut_extrude2 -->
+    <visual>
+      <origin xyz="0.55649 -0.0698493 -0.110352" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+      <material name="gripper_arm__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.55649 -0.0698493 -0.110352" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_plate_gripper__cut_extrude2 -->
+    <visual>
+      <origin xyz="0.589327 -0.0520459 0.0929112" rpy="-0 -0.0388487 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_plate_gripper__cut_extrude2.stl"/>
+      </geometry>
+      <material name="side_plate_gripper__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.589327 -0.0520459 0.0929112" rpy="-0 -0.0388487 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/side_plate_gripper__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part gripper_arm__cut_extrude2_2 -->
+    <visual>
+      <origin xyz="0.562088 -0.0359257 0.0018133" rpy="-0 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+      <material name="gripper_arm__cut_extrude2_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.562088 -0.0359257 0.0018133" rpy="-0 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__4_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__4_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__4_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://robot_arm/description/meshes/id_25_od_32_61705__4_1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ===================== IK target ===================== -->
   <joint name="arm_tip_joint" type="fixed">
-    <parent link="3030_extrusion_robotic_arm_l2__boss_extrude1"/>
+    <parent link="forearm_link"/>
     <child link="arm_tip"/>
-    <origin xyz="-0.0125005 0.41 0.0150005" rpy="-1.570796327 0 1.570796327"/>
+    <origin xyz="0 -0.0019990478429 0.476649565985" rpy="0 -1.47836385569 0"/>
   </joint>
 
   <link name="arm_tip"/>

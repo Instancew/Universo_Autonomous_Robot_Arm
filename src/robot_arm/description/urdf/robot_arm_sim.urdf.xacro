@@ -14,8 +14,8 @@
   <xacro:arg name="mount_height" default="0.4"/>
   <xacro:arg name="controllers_file" default="$(find robot_arm)/config/sim_controllers.yaml"/>
   <xacro:arg name="initial_base" default="0.0"/>
-  <xacro:arg name="initial_shoulder" default="-0.06"/>
-  <xacro:arg name="initial_elbow" default="0.97"/>
+  <xacro:arg name="initial_shoulder" default="-0.24"/>
+  <xacro:arg name="initial_elbow" default="2.29"/>
 
   <xacro:property name="sim" value="$(arg sim)"/>
   <xacro:property name="h" value="$(arg mount_height)"/>

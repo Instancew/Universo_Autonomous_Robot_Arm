@@ -1,4 +1,4 @@
-"""Every file that holds joint limits must agree with the URDF (300 / 500 mm actuators)."""
+"""Every file that holds joint limits must agree with the URDF (limits = Onshape mate limits, export of 30 Oct)."""
 import math
 import sys
 from pathlib import Path
@@ -17,8 +17,8 @@ YAML_NAME = {'base_joint': 'base', 'shoulder_joint': 'shoulder', 'elbow_joint': 
 
 
 def test_urdf_limit_values():
-    assert ref.limits(J, 'shoulder_joint') == pytest.approx((-1.570796, -0.022426), abs=1e-6)
-    assert ref.limits(J, 'elbow_joint') == pytest.approx((-0.149650, 1.007196), abs=1e-6)
+    assert ref.limits(J, 'shoulder_joint') == pytest.approx((-1.419011, -0.197281), abs=1e-6)
+    assert ref.limits(J, 'elbow_joint') == pytest.approx((0.231847, 2.328057), abs=1e-6)
     assert J['base_joint']['type'] == 'continuous'
 
 
@@ -32,11 +32,20 @@ def test_joints_yaml_matches_urdf():
         assert entry['max_position_rad'] == pytest.approx(hi, abs=1e-6), name
 
 
-def test_calibration_end_stops_match_urdf():
+def test_calibration_end_stops_not_inside_urdf_limits():
+    # URDF v2 limits are the CAD mate limits; the actuator end stops must be at or beyond them
+    # (an end stop strictly inside the range would mean the URDF allows angles the actuator cannot reach).
     r = yaml.safe_load((CONFIG / 'calibration.yaml').read_text())['reference']
-    assert r['shoulder_at_full_retraction_deg'] == pytest.approx(math.degrees(ref.limits(J, 'shoulder_joint')[1]), abs=0.001)
-    assert r['elbow_at_full_extension_deg'] == pytest.approx(math.degrees(ref.limits(J, 'elbow_joint')[0]), abs=0.001)
-    assert r['elbow_at_full_retraction_deg'] == pytest.approx(math.degrees(ref.limits(J, 'elbow_joint')[1]), abs=0.001)
+    checked = 0
+    for key, joint in (('shoulder_at_full_retraction_deg', 'shoulder_joint'),
+                       ('elbow_at_full_extension_deg', 'elbow_joint'),
+                       ('elbow_at_full_retraction_deg', 'elbow_joint')):
+        if r.get(key) is None:          # end stop not known yet (null in calibration.yaml)
+            continue
+        lo, hi = (math.degrees(v) for v in ref.limits(J, joint))
+        assert not (lo + 0.001 < r[key] < hi - 0.001), f'{key} = {r[key]} deg is inside the URDF range [{lo:.3f}, {hi:.3f}]'
+        checked += 1
+    assert checked, 'no end stop values in calibration.yaml'
 
 
 def _inside(q):

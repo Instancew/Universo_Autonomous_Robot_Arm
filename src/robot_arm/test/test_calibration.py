@@ -54,14 +54,22 @@ def test_fit_rejects_small_spread():
 
 
 def test_inclinometer_conversions_match_urdf_convention():
-    assert math.degrees(shoulder_from_inclinometer(60.0, REF)) == pytest.approx(-29.99745, abs=1e-6)
-    # shoulder -30, elbow 15 -> forearm elevation 35 - 30 - 15 = -10 deg
-    q2 = elbow_from_inclinometer(89.99745 - 30.0, 34.99797 - 30.0 - 15.0, REF)
-    assert math.degrees(q2) == pytest.approx(15.0, abs=1e-6)
+    r = REF['reference']
+    up0, fore0 = r['upper_arm_elevation_at_zero_deg'], r['forearm_elevation_at_zero_deg']
+    assert math.degrees(shoulder_from_inclinometer(up0 - 30.0, REF)) == pytest.approx(-30.0, abs=1e-6)
+    # shoulder -30, elbow 75 -> forearm top face reads fore0 - 30 - 75
+    q2 = elbow_from_inclinometer(up0 - 30.0, fore0 - 30.0 - 75.0, REF)
+    assert math.degrees(q2) == pytest.approx(75.0, abs=1e-6)
 
 
-def test_tip_check_at_cad_pose():
-    assert '0.0 mm' in check_tip(0.0, 0.0, 0.0, [0.4497665, 0.0, 0.8066195], REF)
+def test_tip_check_matches_urdf():
+    # calibration.yaml geometry must reproduce the URDF arm_tip (0.1 mm) - fails if calibration.yaml is stale
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import urdf_reference as ref
+    joints = ref.load_joints()
+    for qb, qs, qe in ((0.0, -0.5236, 1.5708), (0.7, -1.0, 0.4), (-2.0, -0.25, 2.2)):
+        tip = ref.tip(joints, qb, qs, qe)
+        assert 'error 0.0 mm' in check_tip(qb, qs, qe, list(tip), REF), (qb, qs, qe)
 
 
 def test_end_to_end_simulation():

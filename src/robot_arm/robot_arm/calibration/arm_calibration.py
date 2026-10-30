@@ -1,9 +1,11 @@
 """Arm calibration: find each encoder's direction and zero offset so raw counts give URDF joint angles.
 
 Reference = inclinometer (link angle above horizontal) - independent of the actuators' +/-3 mm tolerance.
-  shoulder_joint = upper_arm_elevation - 89.99745 deg
-  elbow_joint    = shoulder_joint + 34.99797 deg - forearm_elevation
+  shoulder_joint = upper_arm_elevation - upper_arm_elevation_at_zero_deg
+  elbow_joint    = shoulder_joint + forearm_elevation_at_zero_deg - forearm_elevation
+  (both *_at_zero_deg values are in config/calibration.yaml; URDF of 30 Oct: 91.3029 / 84.7040 deg)
 Measure along the top face of the extrusion, pointing OUTWARD from the joint (up = positive).
+The extrusions are not exactly on the joint-to-joint lines; the *_at_zero_deg values absorb that offset.
 
 Commands (see main()):
   status     which encoders are ready / what is still TBD
@@ -47,10 +49,14 @@ def elbow_from_inclinometer(upper_elev_deg: float, fore_elev_deg: float, ref: di
 
 
 def planar_tip(q_shoulder: float, q_elbow: float, ref: dict) -> Tuple[float, float]:
-    """arm_tip [x, z] in the arm plane (m) - same model as the URDF."""
+    """arm_tip [x, z] in the arm plane (m) - same model as the URDF.
+
+    URDF convention: shoulder->elbow line elevation = 90 deg + q_shoulder,
+                     elbow->arm_tip line elevation  = 90 deg + q_shoulder - q_elbow.
+    """
     r = ref['reference']
-    up = math.radians(r['upper_arm_elevation_at_zero_deg']) + q_shoulder
-    fore = math.radians(r['forearm_elevation_at_zero_deg']) + q_shoulder - q_elbow
+    up = math.pi / 2 + q_shoulder
+    fore = math.pi / 2 + q_shoulder - q_elbow
     sx, sz = r['shoulder_axis_xz']
     ex, ez = sx + r['upper_arm_length_m'] * math.cos(up), sz + r['upper_arm_length_m'] * math.sin(up)
     return ex + r['forearm_length_m'] * math.cos(fore), ez + r['forearm_length_m'] * math.sin(fore)
@@ -190,10 +196,13 @@ def run_base(source: EncoderSource, angles_deg: Sequence[float], ref: dict) -> F
 def check_endstops(angles: Dict[str, float], ref: dict) -> List[str]:
     """angles = encoder-derived joint angles (rad) with the actuator(s) fully retracted."""
     r = ref['reference']
-    exp = {'shoulder_joint': r['shoulder_at_full_retraction_deg'], 'elbow_joint': r['elbow_at_full_retraction_deg']}
+    exp = {'shoulder_joint': r.get('shoulder_at_full_retraction_deg'), 'elbow_joint': r.get('elbow_at_full_retraction_deg')}
     tol = {'shoulder_joint': r['end_stop_tolerance_deg']['shoulder'], 'elbow_joint': r['end_stop_tolerance_deg']['elbow']}
     out = []
     for j, a in angles.items():
+        if exp[j] is None or tol[j] is None:
+            out.append(f'{j}: encoder {math.degrees(a):.3f} deg - end stop not known yet (null in calibration.yaml)')
+            continue
         diff = math.degrees(a) - exp[j]
         ok = abs(diff) <= tol[j]
         out.append(f'{j}: encoder {math.degrees(a):.3f} deg vs expected {exp[j]:.3f} deg at full retraction '
@@ -203,7 +212,8 @@ def check_endstops(angles: Dict[str, float], ref: dict) -> List[str]:
 
 def check_tip(q_base: float, q_shoulder: float, q_elbow: float, measured_xyz_m: Sequence[float], ref: dict) -> str:
     x, z = planar_tip(q_shoulder, q_elbow, ref)
-    fk = (x * math.cos(q_base), x * math.sin(q_base), z)
+    y0 = ref['reference'].get('arm_plane_offset_y_m', 0.0)   # arm centre plane is beside the yaw axis
+    fk = (x * math.cos(q_base) - y0 * math.sin(q_base), x * math.sin(q_base) + y0 * math.cos(q_base), z)
     err = math.dist(fk, measured_xyz_m) * 1000
     return (f'FK tip ({fk[0]*1000:.1f}, {fk[1]*1000:.1f}, {fk[2]*1000:.1f}) mm vs measured '
             f'({measured_xyz_m[0]*1000:.1f}, {measured_xyz_m[1]*1000:.1f}, {measured_xyz_m[2]*1000:.1f}) mm '
@@ -228,8 +238,9 @@ def simulate(seed: int = 3, inclinometer_noise_deg: float = 0.1, save: bool = Fa
         'base_joint': {'type': 'incremental', 'pulses_per_rev': 7, 'quadrature_multiplier': 4, 'gear_ratio': 585}}}
     p = ref['procedure']
     results = []
-    for joint, poses in (('shoulder_joint', [(-5, 40), (-25, 20), (-45, 5), (-70, -5)]),
-                         ('elbow_joint', [(-20, -5), (-20, 15), (-20, 35), (-20, 52)])):
+    # (shoulder, elbow) poses in degrees, inside the URDF limits (shoulder -81.3..-11.3, elbow 13.3..133.4)
+    for joint, poses in (('shoulder_joint', [(-15, 40), (-28, 60), (-42, 80), (-57, 100)]),
+                         ('elbow_joint', [(-30, 20), (-30, 55), (-30, 90), (-30, 125)])):
         model = model_from_entry(joint, enc_cfg['encoders'][joint])
         samples = []
         for qs_deg, qe_deg in poses:

@@ -1,43 +1,59 @@
-# robot_arm.urdf — what changed vs. the Onshape export
+# robot_arm.urdf — what changed vs. the Onshape export (Robot_ArmNew, 30 Oct 2026, onshape-to-robot)
 
-CAD geometry is untouched: all 15 CAD links, meshes, mesh origins, inertials and CAD joint
-transforms are copied verbatim (verified: link poses identical to the original to 1e-15 m).
+CAD geometry is untouched: the 4 CAD links, all part meshes, mesh origins and inertials are copied
+verbatim. Every CAD link pose in this URDF equals the export's to 1e-11 m at the reference pose and to
+0.005 mm over the whole joint range (the export's own axes are rounded to 6 digits).
 
 | # | Change | Why |
 |---|--------|-----|
-| 1 | Mesh paths `package://robotic_arm_cad/meshes/` → `package://robot_arm/description/meshes/` | `robotic_arm_cad` was not a ROS 2 package, so meshes could not load |
-| 2 | Added `base_link` + `base_joint` (continuous, z-up) + `base_yaw_link` | CAD has no turntable → no base joint in the export |
-| 3 | Replaced `root` / `fixed_node_to_root_joint` (0.18° / 0.49° CAD alignment noise) with an exact rotation | clean REP-103 frame: x forward, y left, z up |
-| 4 | `revolute_1` → `shoulder_joint`, `revolute_2` → `elbow_joint` | same origin + axis, readable names |
-| 5 | Limits from actuator geometry (was Onshape placeholders: effort=1, velocity=1, wrong angles) | see table below |
-| 6 | `<collision>` on every link (same mesh as visual) | MoveIt needs collision geometry |
-| 7 | New `arm_tip` frame = centre of forearm extrusion end face | IK target (gripper mounting face) |
+| 1 | Mesh paths `package://assets/` → `package://robot_arm/description/meshes/` | `assets` is not a ROS 2 package |
+| 2 | New `base_link` on the yaw axis at the base-plate part origin, z up, x = direction the arm reaches | the export root frame is tilted 0.84° (CAD alignment noise); the yaw axis is exactly normal to the base plate and passes through its origin |
+| 3 | `360` (revolute ±180°) → `base_joint` (continuous) | slip ring: unlimited rotation. Sign: base_joint + = counter-clockwise from above = export `360` − |
+| 4 | `l1End` → `shoulder_joint`, `L2` → `elbow_joint`, rebuilt in clean frames (`upper_arm_link`, `forearm_link`) | names used by MoveIt, servo and teleop; clean zero conventions (below) |
+| 5 | New `arm_tip` frame = centre of the gripper mounting face (gripper base-plate origin) | IK target |
+| 6 | Shoulder / elbow effort and velocity kept from the previous model | the export has placeholders (10 / 10) |
 
-Removed: the ROS 1 launch file (`robotic_arm_cad.launch`) → replaced by `launch/display.launch.py`.
+The gripper has no joints in this export (one rigid link `gripper__1` together with the forearm).
 
-## Confirmed inputs
-- Base yaw axis passes through the centre of the base block (`ra_5`): 5.0 mm behind the part origin,
-  97.5 mm behind the shoulder axis. Slip ring fitted → `base_joint` is truly continuous.
-- Actuator pin-to-pin (team value): 300 mm retracted, 500 mm extended, stroke 200 ± 3 mm.
-  (Datasheet formula would give 305 / 505; the team chose 300 / 500.)
+## Frames
+- `base_link`: x forward, y left (along the shoulder axis), z up; origin on the yaw axis at the base-plate part origin.
+- `arm_tip`: x along the forearm extrusion (outward), y left, z = x × y.
 
-## Geometry (from URDF, mm)
-- Shoulder axis → elbow axis: 540.0. Elbow axis → arm_tip: 430.0.
-- Shoulder axis: 20.0 above base-block bottom, 92.5 in front of part origin.
-- Actuator pins: base lug (−100, 75) in base part; cross plates on upper arm at 250 (shoulder actuator)
-  and 170 (elbow actuator) above shoulder axis, 30.5 in front of arm axis; forearm plate 197.4 from elbow.
+## Joint conventions
+- `shoulder_joint`: 0 = upper arm (shoulder-axis → elbow-axis line) vertical, negative = leaning forward.
+  Upper-arm elevation = 90° + q_shoulder. Export value: l1End = q_shoulder + 11.3033°.
+- `elbow_joint`: 0 = arm straight (elbow → arm_tip line in line with the upper arm), positive = forearm folds down.
+  Forearm (elbow → arm_tip line) elevation = 90° + q_shoulder − q_elbow. Elbow inner angle = 180° − q_elbow.
+  Export value: L2 = q_elbow − 133.3878°.
 
-## Joint conventions (zero = CAD export pose)
-- shoulder 0 = upper arm vertical, negative = forward. Upper-arm elevation = 90° + q_shoulder.
-- elbow 0 = inner angle 125.0°. Inner angle = 125.0° − q_elbow. Forearm elevation = 35.0° + q_shoulder − q_elbow.
+## Geometry (base_link, mm)
+| Item | Value |
+|------|-------|
+| Shoulder axis | x 103.1763, z 64.5001 |
+| Shoulder axis → elbow axis (L1) | 549.6141 |
+| Elbow axis → arm_tip (L2, in the arm plane) | 476.6496 |
+| Arm centre plane (arm_tip y at base_joint = 0) | −1.9990 (2.00 mm to the right of the yaw axis) |
+| Upper-arm extrusion vs. shoulder→elbow line | top face reads 91.3029° when q_shoulder = 0 |
+| Forearm extrusion vs. elbow→arm_tip line | top face reads 84.7040° when both joints = 0 |
+| Shoulder actuator base pin | x −134.3009, z 146.4861 |
+| Upper-arm pins at q = 0 (near / far) | (66.6603, 328.5619) / (65.9781, 358.5541) |
 
-## Limits (rad / deg) and where they come from
-| Joint | Lower | Upper |
-|-------|-------|-------|
-| shoulder_joint | −1.570796 / −90.0° (CAD limit; actuator 450.7 mm) | −0.022426 / −1.285° (actuator 300 mm) |
-| elbow_joint | −0.149650 / −8.574° (actuator 500 mm) | 1.007196 / 57.708° (actuator 300 mm) |
+Tip (exact vs. URDF to 1e-9 m):
+x' = 103.1763 + 549.6141·cos(90° + q_s) + 476.6496·cos(90° + q_s − q_e), z = 64.5001 + (same with sin);
+x = x'·cos(q_b) − y0·sin(q_b), y = x'·sin(q_b) + y0·cos(q_b), with y0 = −1.9990.
 
+## Limits
+| Joint | Lower | Upper | Export mate limit |
+|-------|-------|-------|-------------------|
+| shoulder_joint | −1.419011 rad (−81.303°) | −0.197281 rad (−11.303°) | l1End −1.22173 … 0 |
+| elbow_joint | 0.231847 rad (13.284°) | 2.328057 rad (133.388°) | L2 −2.09621 … 0 |
 
-Shoulder warning: max possible pin-to-pin is 452.1 mm (toggle at −98.99°), so the actuator's
-built-in extend limit switch (500 mm) can NEVER trigger on the shoulder. Lever arm drops from
-167 mm (vertical) to 17.5 mm (horizontal) → 0.35°/mm near vertical, 3.3°/mm near horizontal.
+Upper-arm elevation 8.70° … 78.70°; elbow inner angle 46.61° … 166.72°.
+Shoulder actuator (near upper-arm pin): 313.24 mm at the upper limit, 493.02 mm at the lower limit
+(full retraction 300 mm at q_shoulder −7.661°, full extension 500 mm at −86.768°).
+
+## Still to confirm (needs the STL meshes)
+- The 34 mesh files go in `description/meshes/` with the names used in this URDF.
+- Elbow actuator forearm pin → elbow actuator length over the elbow range.
+- base_link height: the base-plate part origin is probably the plate's bottom face (its centre of mass is 3.0 mm above it).
+- MoveIt collision matrix (SRDF) must be recomputed from the meshes.

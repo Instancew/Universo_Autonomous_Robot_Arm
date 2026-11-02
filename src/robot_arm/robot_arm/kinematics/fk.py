@@ -1,456 +1,482 @@
 #!/usr/bin/env python3
 """
-fk.py
+Forward Kinematics for the Universo Autonomous Robotic Arm.
 
-Forward kinematics for the 3-DOF robotic arm:
-    1. Base
-    2. Shoulder
-    3. Elbow
+Autonomous joints:
+    1. 360   - Base rotation
+    2. l1End - Shoulder rotation
+    3. L2    - Elbow rotation
 
-Geometry and joint limits are based on the Excel measurement sheet.
-
-Units:
-    Length: metres
-    Joint angles: radians
+The manually operated gripper fingers are excluded.
 
 Coordinate frame:
-    Origin: base rotation axis at the bottom face of the base block.
-    +Z: upward.
-    +X: forward when the base angle is zero.
-    +Y: left when viewed from above.
+    X = Forward
+    Y = Left
+    Z = Up
 
-Zero pose:
-    Upper arm vertical.
-    Forearm 35 degrees above horizontal.
+Joint order:
+    q = [base, shoulder, elbow]
 
-Note:
-    The zero pose is a geometric reference and is outside the
-    permitted shoulder joint range.
+Units:
+    Angles: radians
+    Lengths: metres
+
+Geometry:
+    Based on Robot_Arm_Dimensions_and_Limits.docx
+    and the 30 October 2026 CAD/URDF export.
+
+Arm tip:
+    Centre of the gripper mounting face.
 """
 
 import numpy as np
 
 
-# =========================================================
-# 1. GEOMETRY FROM EXCEL
-# =========================================================
+# ============================================================
+# 1. ROBOT GEOMETRY
+# ============================================================
 
-BASE_FORWARD_OFFSET_M = 0.0975
-SHOULDER_HEIGHT_M = 0.020
+# Shoulder axis relative to base yaw axis
+A_SHOULDER = 0.10317653
+H_SHOULDER = 0.06449970
 
-UPPER_ARM_LENGTH_M = 0.540
-FOREARM_LENGTH_M = 0.430
+# Link lengths
+L1 = 0.54961413
+L2 = 0.47664959
 
-FOREARM_ZERO_ELEVATION_RAD = np.deg2rad(35.0)
+# Sideways offset of arm centre plane
+Y_OFF = -0.00199868
+
+# Reference geometry calibration
+E0 = 1.37351263
+DELTA = -2.32805707
+EPS = -0.09242882
 
 
-# =========================================================
-# 2. JOINT LIMITS FROM EXCEL
-# =========================================================
+# ============================================================
+# 2. JOINT CONFIGURATION
+# ============================================================
 
-# Base joint is continuous.
-SHOULDER_LIMITS = (-1.570796, -0.022426)
-ELBOW_LIMITS = (-0.149650, 1.007196)
+JOINT_NAMES = ("360", "l1End", "L2")
+
+YAW_CONTINUOUS = False
+
+# Software limits from the 30 October URDF.
+# Keep these limits unless deliberately changed and validated.
+
+JOINT_LIMITS = np.array([
+    [-np.pi, np.pi],
+    [-1.22173, 0.0],
+    [-2.09621, 0.0]
+], dtype=float)
 
 LIMIT_TOLERANCE_RAD = 1e-6
 
 
-# =========================================================
-# 3. EXCEL ZERO-POSE VALIDATION TARGET
-# =========================================================
+# ============================================================
+# 3. REFERENCE POSE
+# ============================================================
 
-ZERO_POSE_TARGET_M = np.array([
-    0.4498,
+REFERENCE_JOINT_ANGLES = np.array([
     0.0,
-    0.8066
+    0.0,
+    0.0
+])
+
+# Documented arm-tip position at the reference pose.
+REFERENCE_POSITION = np.array([
+    0.48640,
+    -0.00200,
+    0.21448
 ])
 
 
-# =========================================================
-# 4. VALIDATION FUNCTIONS
-# =========================================================
+# ============================================================
+# 4. ROTATION MATRICES
+# ============================================================
 
-def _validate_finite_angles(q_base, q_shoulder, q_elbow):
-    """Raise ValueError if any joint angle is not finite."""
+def rotx(angle):
+    """Rotation matrix about the X-axis."""
 
-    angles = {
-        "Base": q_base,
-        "Shoulder": q_shoulder,
-        "Elbow": q_elbow
-    }
+    c = np.cos(angle)
+    s = np.sin(angle)
 
-    for name, angle in angles.items():
-        if not np.isfinite(angle):
-            raise ValueError(f"{name} angle must be finite.")
+    return np.array([
+        [1.0, 0.0, 0.0],
+        [0.0, c, -s],
+        [0.0, s, c]
+    ])
 
 
-def within_joint_limits(
-    q_shoulder,
-    q_elbow,
-    tol=LIMIT_TOLERANCE_RAD
-):
+def roty(angle):
+    """Rotation matrix about the Y-axis."""
+
+    c = np.cos(angle)
+    s = np.sin(angle)
+
+    return np.array([
+        [c, 0.0, s],
+        [0.0, 1.0, 0.0],
+        [-s, 0.0, c]
+    ])
+
+
+def rotz(angle):
+    """Rotation matrix about the Z-axis."""
+
+    c = np.cos(angle)
+    s = np.sin(angle)
+
+    return np.array([
+        [c, -s, 0.0],
+        [s, c, 0.0],
+        [0.0, 0.0, 1.0]
+    ])
+
+
+# ============================================================
+# 5. HOMOGENEOUS TRANSFORMATIONS
+# ============================================================
+
+def make_T(R=None, p=None):
+    """Construct a 4x4 homogeneous transformation."""
+
+    T = np.eye(4)
+
+    if R is not None:
+        T[:3, :3] = np.asarray(R, dtype=float)
+
+    if p is not None:
+        T[:3, 3] = np.asarray(p, dtype=float)
+
+    return T
+
+
+def trans(x, y, z):
+    """Pure translation."""
+
+    return make_T(p=[x, y, z])
+
+
+def T_rotx(angle):
+    """Homogeneous rotation about X."""
+
+    return make_T(R=rotx(angle))
+
+
+def T_roty(angle):
+    """Homogeneous rotation about Y."""
+
+    return make_T(R=roty(angle))
+
+
+def T_rotz(angle):
+    """Homogeneous rotation about Z."""
+
+    return make_T(R=rotz(angle))
+
+
+# ============================================================
+# 6. INPUT VALIDATION
+# ============================================================
+
+def validate_joint_angles(q, check_limits=False):
     """
-    Return True if shoulder and elbow are within their Excel limits.
+    Validate [base, shoulder, elbow].
 
-    The base is continuous and is not checked here.
+    Returns:
+        Validated NumPy array.
     """
 
-    if not np.isfinite(q_shoulder) or not np.isfinite(q_elbow):
-        return False
+    q = np.asarray(q, dtype=float)
 
-    if not np.isfinite(tol) or tol < 0:
-        raise ValueError("Tolerance must be finite and non-negative.")
+    if q.shape != (3,):
+        raise ValueError(
+            "Joint vector must contain exactly 3 values: "
+            "[base, shoulder, elbow]."
+        )
+
+    if not np.all(np.isfinite(q)):
+        raise ValueError("Joint angles must be finite.")
+
+    if check_limits and not within_joint_limits(q):
+        raise ValueError(
+            "Joint angles are outside the configured "
+            "software joint limits."
+        )
+
+    return q
+
+
+def within_joint_limits(q):
+    """Return True if all joints are within software limits."""
+
+    q = validate_joint_angles(q)
 
     return bool(
-        SHOULDER_LIMITS[0] - tol
-        <= q_shoulder
-        <= SHOULDER_LIMITS[1] + tol
-
+        np.all(q >= JOINT_LIMITS[:, 0] - LIMIT_TOLERANCE_RAD)
         and
-
-        ELBOW_LIMITS[0] - tol
-        <= q_elbow
-        <= ELBOW_LIMITS[1] + tol
+        np.all(q <= JOINT_LIMITS[:, 1] + LIMIT_TOLERANCE_RAD)
     )
 
 
-def clamp_to_limits(q_shoulder, q_elbow):
+def clamp_to_limits(q):
+    """Return joint angles clipped to software limits."""
+
+    q = validate_joint_angles(q)
+
+    return np.clip(
+        q,
+        JOINT_LIMITS[:, 0],
+        JOINT_LIMITS[:, 1]
+    )
+
+
+# ============================================================
+# 7. FORWARD KINEMATICS
+# ============================================================
+
+def frames(q):
     """
-    Return shoulder and elbow angles clipped to their Excel limits.
+    Calculate transformations of the arm.
+
+    Returns:
+        [T1, T2, T3, T4]
+
+        T1: Base rotation
+        T2: Shoulder frame
+        T3: Elbow frame
+        T4: Arm tip / gripper mounting face
+    """
+
+    q = validate_joint_angles(q)
+
+    # Joint angle definitions
+    theta = -q[0]
+
+    e1 = E0 + q[1]
+
+    e2 = e1 + DELTA - q[2]
+
+    # Base rotation
+    T1 = T_rotz(theta)
+
+    # Shoulder transformation
+    T2 = (
+        T1
+        @ trans(
+            A_SHOULDER,
+            Y_OFF,
+            H_SHOULDER
+        )
+        @ T_roty(-e1)
+    )
+
+    # Elbow transformation
+    T3 = (
+        T2
+        @ trans(L1, 0.0, 0.0)
+        @ T_roty(-(e2 - e1))
+    )
+
+    # Arm-tip transformation
+    T4 = (
+        T3
+        @ trans(L2, 0.0, 0.0)
+        @ T_roty(-EPS)
+        @ T_rotx(-np.pi / 2.0)
+    )
+
+    return [T1, T2, T3, T4]
+
+
+# ============================================================
+# 8. END-EFFECTOR TRANSFORMATION
+# ============================================================
+
+def fk(q):
+    """
+    Calculate the complete arm-tip transformation.
+
+    Returns:
+        4x4 homogeneous transformation matrix.
+    """
+
+    return frames(q)[-1]
+
+
+# ============================================================
+# 9. END-EFFECTOR POSITION
+# ============================================================
+
+def fk_position(q):
+    """
+    Calculate arm-tip Cartesian position.
+
+    Returns:
+        [x, y, z] in metres.
+    """
+
+    T = fk(q)
+
+    return T[:3, 3].copy()
+
+
+# ============================================================
+# 10. END-EFFECTOR POSE
+# ============================================================
+
+def fk_pose(q):
+    """
+    Calculate arm-tip position and orientation.
+
+    Returns:
+        position: 3-element vector in metres
+        rotation: 3x3 rotation matrix
+    """
+
+    T = fk(q)
+
+    return (
+        T[:3, 3].copy(),
+        T[:3, :3].copy()
+    )
+
+
+# ============================================================
+# 11. JOINT POSITIONS
+# ============================================================
+
+def joint_positions(q):
+    """
+    Return important arm positions.
+
+    Order:
+        1. Base rotation axis
+        2. Shoulder axis
+        3. Elbow axis
+        4. Arm tip
+
+    Units: metres.
+    """
+
+    T1, T2, T3, T4 = frames(q)
+
+    base_axis = np.array([0.0, 0.0, 0.0])
+
+    shoulder_axis = T2[:3, 3].copy()
+
+    elbow_axis = T3[:3, 3].copy()
+
+    arm_tip = T4[:3, 3].copy()
+
+    return np.array([
+        base_axis,
+        shoulder_axis,
+        elbow_axis,
+        arm_tip
+    ])
+
+
+# ============================================================
+# 12. REFERENCE VALIDATION
+# ============================================================
+
+def validate_reference_pose(tolerance_m=1e-5):
+    """
+    Compare zero-pose FK against the documented CAD reference.
 
     Note:
-        Clamping changes the requested angles. It does not guarantee
-        that the resulting end-effector position reaches a target.
+        The zero pose is a geometric reference and is outside
+        the permitted shoulder joint range.
     """
 
-    if not np.isfinite(q_shoulder) or not np.isfinite(q_elbow):
-        raise ValueError("Joint angles must be finite.")
+    calculated = fk_position(REFERENCE_JOINT_ANGLES)
 
-    return (
-        float(np.clip(q_shoulder, *SHOULDER_LIMITS)),
-        float(np.clip(q_elbow, *ELBOW_LIMITS))
-    )
+    error = calculated - REFERENCE_POSITION
 
-
-def validate_joint_angles(q_base, q_shoulder, q_elbow):
-    """
-    Raise ValueError if any angle is non-finite or if the shoulder
-    or elbow exceeds the Excel joint limits.
-    """
-
-    _validate_finite_angles(q_base, q_shoulder, q_elbow)
-
-    if not within_joint_limits(q_shoulder, q_elbow):
-        raise ValueError(
-            "Joint angle outside Excel limits.\n"
-            f"Shoulder: {np.rad2deg(q_shoulder):.4f} degrees; "
-            f"allowed {np.rad2deg(SHOULDER_LIMITS[0]):.4f} to "
-            f"{np.rad2deg(SHOULDER_LIMITS[1]):.4f} degrees.\n"
-            f"Elbow: {np.rad2deg(q_elbow):.4f} degrees; "
-            f"allowed {np.rad2deg(ELBOW_LIMITS[0]):.4f} to "
-            f"{np.rad2deg(ELBOW_LIMITS[1]):.4f} degrees."
-        )
-
-
-# =========================================================
-# 5. JOINT ANGLE RELATIONSHIPS
-# =========================================================
-
-def upper_arm_elevation(q_shoulder):
-    """Upper-arm elevation above horizontal, in radians."""
-
-    return np.pi / 2.0 + q_shoulder
-
-
-def forearm_elevation(q_shoulder, q_elbow):
-    """Forearm elevation above horizontal, in radians."""
-
-    return (
-        FOREARM_ZERO_ELEVATION_RAD
-        + q_shoulder
-        - q_elbow
-    )
-
-
-# =========================================================
-# 6. PLANAR FORWARD KINEMATICS
-# =========================================================
-
-def fk_planar(q_shoulder, q_elbow):
-    """
-    Calculate the end-effector position in the arm plane.
-
-    Returns:
-        r: horizontal radial distance from the base rotation axis (m)
-        z: height above the base_link origin (m)
-
-    This function deliberately does not enforce joint limits.
-    It can therefore be used by numerical IK algorithms while
-    evaluating candidate angles.
-
-    Positive r points forward in the base-zero arm plane.
-    """
-
-    if not np.isfinite(q_shoulder) or not np.isfinite(q_elbow):
-        raise ValueError("Joint angles must be finite.")
-
-    alpha = upper_arm_elevation(q_shoulder)
-    beta = forearm_elevation(q_shoulder, q_elbow)
-
-    radial_distance = (
-        BASE_FORWARD_OFFSET_M
-        + UPPER_ARM_LENGTH_M * np.cos(alpha)
-        + FOREARM_LENGTH_M * np.cos(beta)
-    )
-
-    z = (
-        SHOULDER_HEIGHT_M
-        + UPPER_ARM_LENGTH_M * np.sin(alpha)
-        + FOREARM_LENGTH_M * np.sin(beta)
-    )
-
-    return float(radial_distance), float(z)
-
-
-# =========================================================
-# 7. THREE-DIMENSIONAL FORWARD KINEMATICS
-# =========================================================
-
-def fk_position(
-    q_base,
-    q_shoulder,
-    q_elbow,
-    check_limits=True
-):
-    """
-    Calculate end-effector position in the base_link frame.
-
-    Parameters:
-        q_base: base rotation in radians.
-        q_shoulder: shoulder angle in radians.
-        q_elbow: elbow angle in radians.
-        check_limits: enforce shoulder and elbow limits if True.
-
-    Returns:
-        NumPy array [x, y, z], in metres.
-    """
-
-    if check_limits:
-        validate_joint_angles(q_base, q_shoulder, q_elbow)
-    else:
-        _validate_finite_angles(q_base, q_shoulder, q_elbow)
-
-    radial_distance, z = fk_planar(
-        q_shoulder,
-        q_elbow
-    )
-
-    x = radial_distance * np.cos(q_base)
-    y = radial_distance * np.sin(q_base)
-
-    return np.array([x, y, z], dtype=float)
-
-
-# =========================================================
-# 8. POSITIONS OF ARM JOINTS AND TIP
-# =========================================================
-
-def fk_joint_positions(
-    q_base,
-    q_shoulder,
-    q_elbow,
-    check_limits=True
-):
-    """
-    Calculate the positions of the shoulder axis, elbow axis and tip.
-
-    Returns:
-        Dictionary with:
-            shoulder: [x, y, z] in metres
-            elbow:    [x, y, z] in metres
-            tip:      [x, y, z] in metres
-    """
-
-    if check_limits:
-        validate_joint_angles(q_base, q_shoulder, q_elbow)
-    else:
-        _validate_finite_angles(q_base, q_shoulder, q_elbow)
-
-    alpha = upper_arm_elevation(q_shoulder)
-
-    # Shoulder-axis position in the arm plane.
-    r_shoulder = BASE_FORWARD_OFFSET_M
-    z_shoulder = SHOULDER_HEIGHT_M
-
-    # Elbow-axis position in the arm plane.
-    r_elbow = (
-        r_shoulder
-        + UPPER_ARM_LENGTH_M * np.cos(alpha)
-    )
-
-    z_elbow = (
-        z_shoulder
-        + UPPER_ARM_LENGTH_M * np.sin(alpha)
-    )
-
-    # End-effector position.
-    r_tip, z_tip = fk_planar(
-        q_shoulder,
-        q_elbow
-    )
-
-    c = np.cos(q_base)
-    s = np.sin(q_base)
-
-    def to_3d(r, z):
-        return np.array([
-            r * c,
-            r * s,
-            z
-        ])
+    error_norm = np.linalg.norm(error)
 
     return {
-        "shoulder": to_3d(r_shoulder, z_shoulder),
-        "elbow": to_3d(r_elbow, z_elbow),
-        "tip": to_3d(r_tip, z_tip)
+        "calculated_position": calculated,
+        "expected_position": REFERENCE_POSITION.copy(),
+        "error": error,
+        "error_norm": float(error_norm),
+        "passed": bool(error_norm <= tolerance_m)
     }
 
 
-# =========================================================
-# 9. END-EFFECTOR POSE INFORMATION
-# =========================================================
-
-def fk_pose(
-    q_base,
-    q_shoulder,
-    q_elbow,
-    check_limits=True
-):
-    """
-    Return end-effector position and simplified orientation information.
-
-    This does not return a complete six-dimensional pose.
-    """
-
-    position = fk_position(
-        q_base,
-        q_shoulder,
-        q_elbow,
-        check_limits
-    )
-
-    return {
-        "position_m": position,
-        "base_rotation_rad": float(q_base),
-        "forearm_elevation_rad": forearm_elevation(
-            q_shoulder,
-            q_elbow
-        ),
-        "joint_angles_rad": np.array([
-            q_base,
-            q_shoulder,
-            q_elbow
-        ])
-    }
-
-
-# =========================================================
-# 10. ZERO-POSE VALIDATION
-# =========================================================
-
-def validate_zero_pose(tolerance_m=0.001):
-    """
-    Compare the calculated reference-pose position with the Excel target.
-
-    The reference pose is evaluated without enforcing joint limits because
-    the zero shoulder angle lies outside the permitted shoulder range.
-    """
-
-    if not np.isfinite(tolerance_m) or tolerance_m < 0:
-        raise ValueError(
-            "Tolerance must be finite and non-negative."
-        )
-
-    calculated = fk_position(
-        0.0,
-        0.0,
-        0.0,
-        check_limits=False
-    )
-
-    error = calculated - ZERO_POSE_TARGET_M
-    error_distance = float(np.linalg.norm(error))
-
-    return {
-        "calculated_position_m": calculated,
-        "excel_target_m": ZERO_POSE_TARGET_M.copy(),
-        "error_m": error,
-        "error_distance_m": error_distance,
-        "passed": error_distance <= tolerance_m
-    }
-
-
-# =========================================================
-# 11. SELF-TEST
-# =========================================================
+# ============================================================
+# 13. TEST
+# ============================================================
 
 if __name__ == "__main__":
 
-    print("3-DOF ROBOTIC ARM - FORWARD KINEMATICS")
-    print("=" * 45)
-
-    # Reference-pose validation.
-    result = validate_zero_pose()
-
-    print("\nExcel reference-pose validation:")
-    print(
-        "Calculated position (mm):",
-        np.round(result["calculated_position_m"] * 1000, 4)
-    )
-    print(
-        "Excel target (mm):       ",
-        np.round(result["excel_target_m"] * 1000, 4)
-    )
-    print(
-        "Coordinate error (mm):   ",
-        np.round(result["error_m"] * 1000, 4)
-    )
-    print(
-        "Total position error (mm):",
-        round(result["error_distance_m"] * 1000, 6)
-    )
-    print("Within tolerance:         ", result["passed"])
-
-    # Example configuration within the specified limits.
-    q_base, q_shoulder, q_elbow = np.deg2rad([
-        30.0,
-        -20.0,
-        15.0
-    ])
-
-    position = fk_position(
-        q_base,
-        q_shoulder,
-        q_elbow
+    np.set_printoptions(
+        precision=6,
+        suppress=True
     )
 
-    print("\nExample joint angles:")
-    print(f"Base:     {np.rad2deg(q_base):.3f} degrees")
-    print(f"Shoulder: {np.rad2deg(q_shoulder):.3f} degrees")
-    print(f"Elbow:    {np.rad2deg(q_elbow):.3f} degrees")
+    q = REFERENCE_JOINT_ANGLES.copy()
 
-    print("\nEnd-effector position:")
-    print(f"X = {position[0]:.6f} m")
-    print(f"Y = {position[1]:.6f} m")
-    print(f"Z = {position[2]:.6f} m")
+    print("\n========== FORWARD KINEMATICS ==========")
 
-    print("\nJoint-axis positions:")
-    for name, point in fk_joint_positions(
-        q_base,
-        q_shoulder,
-        q_elbow
-    ).items():
-        print(
-            f"{name.capitalize():8s}: "
-            f"{np.round(point, 6)} m"
-        )
+    print("\nJoint order:")
+    print(JOINT_NAMES)
+
+    print("\nJoint angles (radians):")
+    print(q)
+
+    print("\nJoint angles (degrees):")
+    print(np.degrees(q))
+
+    print("\nJoint limits:")
+    print(JOINT_LIMITS)
+
+    print("\nWithin joint limits:")
+    print(within_joint_limits(q))
+
+    print("\nEnd-effector transformation:")
+    print(fk(q))
+
+    print("\nArm-tip position (metres):")
+    print(fk_position(q))
+
+    print("\nArm-tip position (millimetres):")
+    print(fk_position(q) * 1000.0)
+
+    print("\nJoint positions (metres):")
+    print(joint_positions(q))
+
+    print("\n========== REFERENCE VALIDATION ==========")
+
+    result = validate_reference_pose()
+
+    print("\nExpected position (m):")
+    print(result["expected_position"])
+
+    print("\nCalculated position (m):")
+    print(result["calculated_position"])
+
+    print("\nPosition error (m):")
+    print(result["error"])
+
+    print("\nError magnitude (m):")
+    print(result["error_norm"])
+
+    print("\nReference validation:")
+    print("PASS" if result["passed"] else "FAIL")
+
+def fk_planar(q):
+    """
+    Return the arm-tip position in the planar radial-vertical space.
+    Output: [radial_distance, z] in metres.
+    """
+    position = fk_position(q)
+    radial_distance = np.hypot(position[0], position[1])
+    return np.array([radial_distance, position[2]])
+
+
+def fk_joint_positions(q):
+    """Compatibility function returning base, shoulder, elbow and tip."""
+    return joint_positions(q)

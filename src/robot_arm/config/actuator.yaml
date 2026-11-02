@@ -2,24 +2,24 @@ actuators:
   shoulder:
     voltage_v: 12.0
     type: linear
-    joint: shoulder
+    joint: shoulder_joint
     enabled: false
     min_stroke_m: 0.0
     max_stroke_m: 0.2
     retracted_total_length: 0.3
     extended_total_length: 0.5
-    limits_verified: true
+    limits_verified: false
 
   elbow:
     voltage_v: 12.0
     type: linear
-    joint: elbow
+    joint: elbow_joint
     enabled: false
     min_stroke_m: 0.0
     max_stroke_m: 0.2
     retracted_total_length: 0.3
     extended_total_length: 0.5
-    limits_verified: true
+    limits_verified: false
 
 units:
   length: meters

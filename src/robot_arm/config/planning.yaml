@@ -3,9 +3,10 @@ planning:
   time_step_s: 0.1
 
   velocity_limits:
-    base_rad_s: null
-    shoulder_rad_s: null
-    elbow_rad_s: null
+    base_rad_s: 3.14
+    shoulder_rad_s: 0.042
+    elbow_rad_s: 0.0355
+    limits_verified: false
 
   collision_checking:
     enabled: true
@@ -15,3 +16,8 @@ planning:
     enabled: false
     require_calibration: true
     require_verified_joint_limits: true
+
+units:
+time: seconds
+angle: radians
+length: meters

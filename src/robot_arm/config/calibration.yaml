@@ -3,15 +3,15 @@
 # Angles in degrees, lengths in metres. base_link: x forward, y left, z up.
 reference:
   # Link elevation (angle above horizontal, as read by an inclinometer) when the joint is at 0
-  upper_arm_elevation_at_zero_deg: 89.99745     # shoulder_joint = 0 -> upper arm vertical
-  forearm_elevation_at_zero_deg: 34.99797       # shoulder = elbow = 0 -> forearm 35 deg up
+  upper_arm_elevation_at_zero_deg: 90.00000     # shoulder_joint = 0 -> upper arm vertical
+  forearm_elevation_at_zero_deg: 0.00000       # shoulder = elbow = 0 -> forearm 35 deg up
   #   shoulder_joint = upper_arm_elevation - 89.99745
   #   elbow_joint    = shoulder_joint + 34.99797 - forearm_elevation
 
   # Planar geometry for the tip check (arm plane, base yaw = 0) [x, z]
-  shoulder_axis_xz: [0.0975003, 0.0200000]
-  upper_arm_length_m: 0.539995
-  forearm_length_m: 0.429998
+  shoulder_axis_xz: [0.1031763, 0.0645001]
+  upper_arm_length_m: 0.5496141
+  forearm_length_m: 0.4766496
 
   # Joint angles at the actuator end stops (team value: pin-to-pin 300 / 500 mm, stroke tolerance +/- 3 mm)
   shoulder_at_full_retraction_deg: -1.285

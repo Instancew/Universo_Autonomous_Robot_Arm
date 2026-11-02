@@ -1,31 +1,37 @@
-# Main robot arm configuration
 arm:
   name: autonomous_robot_arm
   dof: 3
 
-  # Main movable joints
-  base_joint: base
-  shoulder_joint: shoulder
-  elbow_joint: elbow
+  # Main movable joints (exact URDF names)
+  base_joint: base_joint
+  shoulder_joint: shoulder_joint
+  elbow_joint: elbow_joint
 
 # Link dimensions in metres
-# Fill these after identifying the corresponding CAD components.
 links:
-  upper_arm_length_m: 0.540
-  forearm_length_m: 0.430
+  upper_arm_length_m: 0.5496141
+  forearm_length_m: 0.4766496
 
-# Coordinate frames
+# Coordinate frames (exact URDF link names)
 frames:
   base_frame: base_link
-  shoulder_frame: shoulder_link
-  elbow_frame: elbow_link
-  end_effector_frame: gripper_link
+  shoulder_frame: upper_arm_link
+  elbow_frame: forearm_link
+  end_effector_frame: arm_tip
 
-# Units used throughout the kinematics code
+# Geometry relative to base_link
+geometry:
+  shoulder_axis:
+    x: 0.103176253217
+    y: 0.0
+    z: 0.064500076063
+
+  arm_plane_y_offset_m: -0.0019990478429
+
+# Units
 units:
   length: meters
   angle: radians
-
 
 
 

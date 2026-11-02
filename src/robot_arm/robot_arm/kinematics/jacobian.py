@@ -1,179 +1,361 @@
-"""
-Position Jacobian for the 3-DOF robotic arm.
 
-The Jacobian maps joint angular velocities to end-effector
-linear velocity.
+"""
+jacobian.py - Position Jacobian for the 3-DOF robotic arm.
 
 Joint order:
-    q_base, q_shoulder, q_elbow
+    q[0] = base rotation
+    q[1] = shoulder rotation
+    q[2] = elbow rotation
 
-Rows:
-    X, Y, Z
+The Jacobian maps joint velocities to Cartesian tip velocity:
 
-Units:
-    metres per radian
+    p_dot = J(q) @ q_dot
+
+The Jacobian is calculated using central finite differences
+of the calibrated forward kinematics model in fk.py.
+
+Reference:
+    Robot_Arm_Dimensions_and_Limits.docx
+    Calibrated URDF geometry through fk.py
 """
 
 import numpy as np
 
-from .fk import (
-    BASE_FORWARD_OFFSET_M,
-    UPPER_ARM_LENGTH_M,
-    FOREARM_LENGTH_M,
-    upper_arm_elevation,
-    forearm_elevation,
-    validate_joint_angles,
-)
+try:
+    from .fk import fk_position
+except ImportError:
+    from fk import fk_position
 
 
-def position_jacobian(
-    q_base: float,
-    q_shoulder: float,
-    q_elbow: float,
-    check_limits: bool = True,
-) -> np.ndarray:
-    """
-    Calculate the 3x3 translational Jacobian.
+# ---------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------
 
-    Parameters
-    ----------
-    q_base : float
-        Base rotation angle in radians.
-    q_shoulder : float
-        Shoulder joint angle in radians.
-    q_elbow : float
-        Elbow joint angle in radians.
-    check_limits : bool
-        If True, validate the shoulder and elbow joint limits.
+DEFAULT_EPSILON = 1e-6
+DEFAULT_DAMPING = 0.02
 
-    Returns
-    -------
-    numpy.ndarray
-        Position Jacobian in metres per radian.
 
-        Rows:    [x, y, z]
-        Columns: [base, shoulder, elbow]
+# ---------------------------------------------------------
+# Input validation
+# ---------------------------------------------------------
 
-    Raises
-    ------
-    ValueError
-        If the joint angles are not finite or violate the configured
-        joint limits when limit checking is enabled.
-    """
+def _validate_joint_vector(q):
+    """Validate a three-joint configuration."""
 
-    # Convert joint angles to a NumPy array.
-    angles = np.array(
-        [q_base, q_shoulder, q_elbow],
-        dtype=float,
-    )
+    q = np.asarray(q, dtype=float)
 
-    # Validate input angles.
-    if not np.all(np.isfinite(angles)):
-        raise ValueError("Joint angles must be finite.")
-
-    # Validate shoulder and elbow limits.
-    if check_limits:
-        validate_joint_angles(
-            q_base,
-            q_shoulder,
-            q_elbow,
+    if q.shape != (3,):
+        raise ValueError(
+            "Joint configuration must contain "
+            "[q_base, q_shoulder, q_elbow]."
         )
 
-    # Calculate absolute link elevation angles.
-    alpha = upper_arm_elevation(q_shoulder)
-    beta = forearm_elevation(q_shoulder, q_elbow)
+    if not np.all(np.isfinite(q)):
+        raise ValueError("Joint angles must be finite.")
 
-    # Radial distance from the base rotation axis to the end effector.
-    # Includes the shoulder's forward offset.
-    radial = (
-        BASE_FORWARD_OFFSET_M
-        + UPPER_ARM_LENGTH_M * np.cos(alpha)
-        + FOREARM_LENGTH_M * np.cos(beta)
-    )
+    return q
 
-    # Derivative of radial distance with respect to shoulder angle.
-    dr_dshoulder = (
-        -UPPER_ARM_LENGTH_M * np.sin(alpha)
-        - FOREARM_LENGTH_M * np.sin(beta)
-    )
 
-    # Derivative of radial distance with respect to elbow angle.
-    dr_delbow = (
-        FOREARM_LENGTH_M * np.sin(beta)
-    )
+# ---------------------------------------------------------
+# Position Jacobian
+# ---------------------------------------------------------
 
-    # Derivative of vertical position with respect to shoulder angle.
-    dz_dshoulder = (
-        UPPER_ARM_LENGTH_M * np.cos(alpha)
-        + FOREARM_LENGTH_M * np.cos(beta)
-    )
+def jacobian_linear(q, epsilon=DEFAULT_EPSILON):
+    """
+    Calculate the 3x3 Cartesian position Jacobian.
 
-    # Derivative of vertical position with respect to elbow angle.
-    dz_delbow = (
-        -FOREARM_LENGTH_M * np.cos(beta)
-    )
+    Args:
+        q:
+            Joint angles [base, shoulder, elbow] in radians.
 
-    # Base rotation trigonometric terms.
-    c = np.cos(q_base)
-    s = np.sin(q_base)
+        epsilon:
+            Small angular perturbation in radians.
 
-    # Construct the translational Jacobian.
-    #
-    # Rows:    X, Y, Z
-    # Columns: base, shoulder, elbow
-    #
-    # J maps joint velocities to end-effector linear velocity:
-    #     velocity_xyz = J @ joint_velocities
+    Returns:
+        J:
+            3x3 Jacobian matrix.
 
-    J = np.array(
-        [
-            [
-                -radial * s,
-                dr_dshoulder * c,
-                dr_delbow * c,
-            ],
-            [
-                radial * c,
-                dr_dshoulder * s,
-                dr_delbow * s,
-            ],
-            [
-                0.0,
-                dz_dshoulder,
-                dz_delbow,
-            ],
-        ],
-        dtype=float,
-    )
+    Units:
+        Metres per radian.
+    """
+
+    q = _validate_joint_vector(q)
+
+    if not np.isfinite(epsilon) or epsilon <= 0:
+        raise ValueError("epsilon must be positive and finite.")
+
+    J = np.zeros((3, 3), dtype=float)
+
+    for i in range(3):
+
+        q_plus = q.copy()
+        q_minus = q.copy()
+
+        q_plus[i] += epsilon
+        q_minus[i] -= epsilon
+
+        p_plus = fk_position(q_plus)
+        p_minus = fk_position(q_minus)
+
+        J[:, i] = (
+            p_plus - p_minus
+        ) / (2.0 * epsilon)
 
     return J
 
 
+# ---------------------------------------------------------
+# Damped pseudoinverse
+# ---------------------------------------------------------
+
+def damped_pinv(J, damping=DEFAULT_DAMPING):
+    """
+    Calculate the damped Moore-Penrose pseudoinverse.
+
+    Formula:
+
+        J_damped_pinv =
+            J.T @ inv(J @ J.T + damping^2 * I)
+
+    Damping improves numerical stability near singular
+    configurations.
+
+    Args:
+        J:
+            Jacobian matrix.
+
+        damping:
+            Positive damping factor.
+
+    Returns:
+        Damped pseudoinverse of J.
+    """
+
+    J = np.asarray(J, dtype=float)
+
+    if J.ndim != 2:
+        raise ValueError("J must be a two-dimensional matrix.")
+
+    if not np.all(np.isfinite(J)):
+        raise ValueError("J must contain finite values.")
+
+    if not np.isfinite(damping) or damping <= 0:
+        raise ValueError("damping must be positive and finite.")
+
+    identity = np.eye(J.shape[0])
+
+    return (
+        J.T
+        @ np.linalg.solve(
+            J @ J.T + damping ** 2 * identity,
+            identity,
+        )
+    )
+
+
+# ---------------------------------------------------------
+# Cartesian velocity calculation
+# ---------------------------------------------------------
+
+def cartesian_velocity(q, joint_velocities):
+    """
+    Calculate Cartesian tip velocity.
+
+    Args:
+        q:
+            Current joint angles [rad].
+
+        joint_velocities:
+            Joint velocities [rad/s].
+
+    Returns:
+        Cartesian velocity [m/s].
+    """
+
+    q = _validate_joint_vector(q)
+
+    joint_velocities = np.asarray(
+        joint_velocities,
+        dtype=float,
+    )
+
+    if joint_velocities.shape != (3,):
+        raise ValueError(
+            "Joint velocities must contain three values."
+        )
+
+    if not np.all(np.isfinite(joint_velocities)):
+        raise ValueError("Joint velocities must be finite.")
+
+    return jacobian_linear(q) @ joint_velocities
+
+
+# ---------------------------------------------------------
+# Joint velocity calculation
+# ---------------------------------------------------------
+
+def joint_velocity_from_cartesian(
+    q,
+    cartesian_velocities,
+    damping=DEFAULT_DAMPING,
+):
+    """
+    Calculate joint velocities from a desired Cartesian velocity.
+
+    Uses damped least squares.
+
+    Args:
+        q:
+            Current joint configuration [rad].
+
+        cartesian_velocities:
+            Desired Cartesian velocity [m/s].
+
+        damping:
+            Damping factor.
+
+    Returns:
+        Joint velocities [rad/s].
+    """
+
+    q = _validate_joint_vector(q)
+
+    cartesian_velocities = np.asarray(
+        cartesian_velocities,
+        dtype=float,
+    )
+
+    if cartesian_velocities.shape != (3,):
+        raise ValueError(
+            "Cartesian velocity must contain [vx, vy, vz]."
+        )
+
+    if not np.all(np.isfinite(cartesian_velocities)):
+        raise ValueError(
+            "Cartesian velocities must be finite."
+        )
+
+    J = jacobian_linear(q)
+
+    return damped_pinv(J, damping) @ cartesian_velocities
+
+
+# ---------------------------------------------------------
+# Self-test
+# ---------------------------------------------------------
+
 if __name__ == "__main__":
 
-    # Example joint configuration in degrees.
-    angles_deg = [30.0, -20.0, 15.0]
-
-    # Convert degrees to radians.
-    q_base, q_shoulder, q_elbow = np.deg2rad(
-        angles_deg
+    np.set_printoptions(
+        precision=6,
+        suppress=True,
     )
 
-    # Calculate the Jacobian.
-    J = position_jacobian(
-        q_base,
-        q_shoulder,
-        q_elbow,
+    print("\n========== JACOBIAN TEST ==========\n")
+
+    q = np.array([
+        0.6,
+        -0.4,
+        -1.1,
+    ])
+
+    print("Joint angles [rad]:", q)
+
+    J = jacobian_linear(q)
+
+    print("\nPosition Jacobian:")
+    print(J)
+
+    print("\nJacobian shape:", J.shape)
+
+    # Test pseudoinverse
+    J_pinv = damped_pinv(J)
+
+    print("\nDamped pseudoinverse:")
+    print(J_pinv)
+
+    # Test Cartesian velocity
+    q_dot = np.array([
+        0.1,
+        0.2,
+        0.15,
+    ])
+
+    velocity = cartesian_velocity(q, q_dot)
+
+    print("\nJoint velocities [rad/s]:")
+    print(q_dot)
+
+    print("\nCartesian tip velocity [m/s]:")
+    print(velocity)
+
+    # Test inverse velocity calculation
+    recovered_q_dot = joint_velocity_from_cartesian(
+        q,
+        velocity,
     )
 
-    # Display results.
-    print("3-DOF ROBOTIC ARM - POSITION JACOBIAN")
-    print("=" * 45)
+    reconstructed_velocity = J @ recovered_q_dot
 
-    print("Joint angles (degrees):", angles_deg)
+    velocity_error = np.linalg.norm(
+        reconstructed_velocity - velocity
+    )
 
-    print("\nJacobian (m/rad):")
-    print(np.round(J, 6))
+    print("\nRecovered joint velocities [rad/s]:")
+    print(recovered_q_dot)
 
-    print("\nRows: X, Y, Z")
-    print("Columns: base, shoulder, elbow")
+    print("\nReconstructed Cartesian velocity [m/s]:")
+    print(reconstructed_velocity)
+
+    print("\nCartesian velocity reconstruction error:")
+    print(velocity_error)
+
+    # Test results
+    checks = [
+        (
+            "Jacobian shape",
+            J.shape == (3, 3),
+        ),
+        (
+            "Finite Jacobian",
+            np.all(np.isfinite(J)),
+        ),
+        (
+            "Pseudoinverse shape",
+            J_pinv.shape == (3, 3),
+        ),
+        (
+            "Finite pseudoinverse",
+            np.all(np.isfinite(J_pinv)),
+        ),
+        (
+            "Velocity calculation",
+            np.all(np.isfinite(velocity)),
+        ),
+        (
+            "Velocity reconstruction",
+            velocity_error < 5e-4,
+        ),
+    ]
+
+    print("\n========== FINAL RESULT ==========\n")
+
+    passed = 0
+    failed = 0
+
+    for name, result in checks:
+
+        if result:
+            print(f"PASS | {name}")
+            passed += 1
+        else:
+            print(f"FAIL | {name}")
+            failed += 1
+
+    print("\nPassed:", passed)
+    print("Failed:", failed)
+
+    if failed == 0:
+        print("RESULT: ALL TESTS PASSED")
+    else:
+        print("RESULT: VALIDATION NEEDS ATTENTION")

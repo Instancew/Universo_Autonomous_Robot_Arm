@@ -14,9 +14,9 @@ reference:
   forearm_length_m: 0.4766496
 
   # Joint angles at the actuator end stops (team value: pin-to-pin 300 / 500 mm, stroke tolerance +/- 3 mm)
-  shoulder_at_full_retraction_deg: -7.661
-  elbow_at_full_retraction_deg: 13.284
-  elbow_at_full_extension_deg: 133.388
+  shoulder_joint_at_full_retraction_deg: -7.661
+  elbow_joint_at_full_retraction_deg: 13.284
+  elbow_joint_at_full_extension_deg: 133.388
   # +/- 3 mm stroke tolerance at the end stops corresponds to roughly this many degrees:
   end_stop_tolerance_deg: {shoulder: 1.03, elbow: 1.35}
 

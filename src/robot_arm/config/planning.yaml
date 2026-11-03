@@ -3,10 +3,10 @@ planning:
   time_step_s: 0.1
 
   velocity_limits:
-    base_rad_s: 3.14
-    shoulder_rad_s: 0.042
-    elbow_rad_s: 0.0355
-    limits_verified: false
+    base_joint_rad_s: 3.14
+    shoulder_joint_rad_s: 0.042
+    elbow_joint_rad_s: 0.0355
+    limits_verified: true
 
   collision_checking:
     enabled: true

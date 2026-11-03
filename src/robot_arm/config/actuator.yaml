@@ -8,7 +8,7 @@ actuators:
     max_stroke_m: 0.2
     retracted_total_length: 0.3
     extended_total_length: 0.5
-    limits_verified: false
+    limits_verified: true
 
   elbow:
     voltage_v: 12.0
@@ -16,10 +16,10 @@ actuators:
     joint: elbow_joint
     enabled: false
     min_stroke_m: 0.0
-    max_stroke_m: 0.2
-    retracted_total_length: 0.3
-    extended_total_length: 0.5
-    limits_verified: false
+    max_stroke_m: 0.1
+    retracted_total_length: 0.210
+    extended_total_length: 0.110
+    limits_verified: true
 
 units:
   length: meters

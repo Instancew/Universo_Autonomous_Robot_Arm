@@ -1,0 +1,1037 @@
+<?xml version="1.0" ?>
+<!-- Generated using onshape-to-robot -->
+<!-- Onshape https://cad.onshape.com/documents/aa11541ed343810a261569d2/w/54b408c5cd704083b2e2e266/e/323bd04df7f82cb9c84ed082 -->
+<robot name="Robot_ArmNew">
+  <!-- Link robotic_arm_base_plate__boss_extrude2 -->
+  <link name="robotic_arm_base_plate__boss_extrude2">
+    <inertial>
+      <origin xyz="0.00184915 -0.000976443 0.0146596" rpy="0 0 0"/>
+      <mass value="1.89084"/>
+      <inertia ixx="0.0145685" ixy="-5.86519e-05" ixz="-4.25492e-05" iyy="0.00525366" iyz="-0.000164209" izz="0.0192736"/>
+    </inertial>
+    <!-- Part thrust_bearing_d_enclosure__cirpattern1 -->
+    <visual>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="1.58253 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://assets/thrust_bearing_d_enclosure__cirpattern1.stl"/>
+      </geometry>
+      <material name="thrust_bearing_d_enclosure__cirpattern1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="1.58253 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://assets/thrust_bearing_d_enclosure__cirpattern1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part robotic_arm_base_plate__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="-1.55907 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://assets/robotic_arm_base_plate__boss_extrude2.stl"/>
+      </geometry>
+      <material name="robotic_arm_base_plate__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0018758 -0.000941463 0.011663" rpy="-1.55907 -0.00881766 -0.00645199"/>
+      <geometry>
+        <mesh filename="package://assets/robotic_arm_base_plate__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Link ra_3__boss_extrude1 -->
+  <link name="ra_3__boss_extrude1">
+    <inertial>
+      <origin xyz="-0.0303207 -2.10884e-05 -0.035927" rpy="0 0 0"/>
+      <mass value="0.987018"/>
+      <inertia ixx="0.0023999" ixy="-2.17346e-06" ixz="-0.00174224" iyy="0.00885948" iyz="-1.69646e-06" izz="0.00821911"/>
+    </inertial>
+    <!-- Part ra_base_height_inc_actuator_part__boss_extrude5 -->
+    <visual>
+      <origin xyz="-0.125 -0.022 -0.005" rpy="-1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+      <material name="ra_base_height_inc_actuator_part__boss_extrude5_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.125 -0.022 -0.005" rpy="-1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_6_od_15_th_5_bearing_619__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.134301 0.027 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+      <material name="id_6_od_15_th_5_bearing_619__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 0.027 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.134301 0.0376014 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 0.0376014 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_plate_laser_cut__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.125 0.0175 -0.035" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_base_plate_laser_cut__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.125 0.0175 -0.035" rpy="-1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.103176 -0.0255 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103176 -0.0255 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_3__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.103176 -0.07 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_3__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_3__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103176 -0.07 -0.035" rpy="0 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_3__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_plate_laser_cut__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.125 -0.0255 -0.035" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_base_plate_laser_cut__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.125 -0.0255 -0.035" rpy="-1.5708 -0 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_plate_laser_cut__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.103 0.0255 -0.0351761" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.103 0.0255 -0.0351761" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_6_od_15_th_5_bearing_619__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="-0.134301 -0.025 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+      <material name="id_6_od_15_th_5_bearing_619__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.134301 -0.025 -0.116986" rpy="3.14159 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/id_6_od_15_th_5_bearing_619__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_5__cirpattern1 -->
+    <visual>
+      <origin xyz="0 -0 0" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_5__cirpattern1.stl"/>
+      </geometry>
+      <material name="ra_5__cirpattern1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0 0" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_5__cirpattern1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_base_height_inc_actuator_part__boss_extrude5_2 -->
+    <visual>
+      <origin xyz="-0.125 0.03 -0.005" rpy="-1.5708 0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+      <material name="ra_base_height_inc_actuator_part__boss_extrude5_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.125 0.03 -0.005" rpy="-1.5708 0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_base_height_inc_actuator_part__boss_extrude5.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Link ra_4__boss_extrude1 -->
+  <link name="ra_4__boss_extrude1">
+    <inertial>
+      <origin xyz="0.278901 -0.00564188 -0.0675572" rpy="0 0 0"/>
+      <mass value="1.58078"/>
+      <inertia ixx="0.00447972" ixy="0.000722581" ixz="-0.000189486" iyy="0.0500233" iyz="4.80005e-06" izz="0.0461324"/>
+    </inertial>
+    <!-- Part 3030_extrusion_robotic_arm_l1__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.469824 -0.00999947 -0.0230005" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l1__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.469824 -0.00999947 -0.0230005" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part c_clamp_plate_actuator_mounting__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.279824 -0.00599892 -0.128" rpy="-3.14159 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="c_clamp_plate_actuator_mounting__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 -0.00599892 -0.128" rpy="-3.14159 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1 -->
+    <visual>
+      <origin xyz="0.264824 0.0255011 -0.0570005" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0255011 -0.0570005" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.0448239 0.01 -0.136" rpy="0 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0448239 0.01 -0.136" rpy="0 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_2 -->
+    <visual>
+      <origin xyz="0.0448239 0.01 -0.008" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0448239 0.01 -0.008" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_4__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.279824 0.00500108 -0.068" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_4__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_4__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 0.00500108 -0.068" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/ra_4__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_2 -->
+    <visual>
+      <origin xyz="0.294824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 3030_extrusion_robotic_arm_l1__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.469824 -0.00999947 -0.112999" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l1__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.469824 -0.00999947 -0.112999" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l1__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_3 -->
+    <visual>
+      <origin xyz="0.504648 -0.0224995 -0.136" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.504648 -0.0224995 -0.136" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part c_clamp_plate_actuator_mounting__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.279824 -0.00599892 9.4e-09" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="package://assets/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="c_clamp_plate_actuator_mounting__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.279824 -0.00599892 9.4e-09" rpy="3.14159 -0 0"/>
+      <geometry>
+        <mesh filename="package://assets/c_clamp_plate_actuator_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_3 -->
+    <visual>
+      <origin xyz="0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.294824 0.0305011 -0.0279995" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0305011 -0.0279995" rpy="-1.5708 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_3 -->
+    <visual>
+      <origin xyz="0.294824 0.0255011 -0.0570005" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.294824 0.0255011 -0.0570005" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part knuckle_actuator_part_mounting__chamfer1_4 -->
+    <visual>
+      <origin xyz="0.264824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+      <material name="knuckle_actuator_part_mounting__chamfer1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0255011 -0.0869995" rpy="0 0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/knuckle_actuator_part_mounting__chamfer1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part m6_80mm_rod__boss_extrude1_3 -->
+    <visual>
+      <origin xyz="0.264824 0.0305011 -0.0279995" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+      <material name="m6_80mm_rod__boss_extrude1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.264824 0.0305011 -0.0279995" rpy="-1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/m6_80mm_rod__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_4 -->
+    <visual>
+      <origin xyz="-0.000352225 0 -0.136" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.000352225 0 -0.136" rpy="1.5708 -0 3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_3__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.549472 -0.0124995 0.00199893" rpy="-1.5708 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_3__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ra_3__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549472 -0.0124995 0.00199893" rpy="-1.5708 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_3__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_5 -->
+    <visual>
+      <origin xyz="0.549472 -0.0124995 -0.008" rpy="1.5708 -0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_5_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549472 -0.0124995 -0.008" rpy="1.5708 -0 -3.14159"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_1__cut_extrude1_4 -->
+    <visual>
+      <origin xyz="0.504648 -0.0224995 -0.008" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+      <material name="ra_1__cut_extrude1_4_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.504648 -0.0224995 -0.008" rpy="-0 0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/ra_1__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Link gripper__1 -->
+  <link name="gripper__1">
+    <inertial>
+      <origin xyz="0.45374 -0.0659326 -0.0340334" rpy="0 0 0"/>
+      <mass value="2.52775"/>
+      <inertia ixx="0.0237637" ixy="0.00028306" ixz="0.0042694" iyy="0.124298" iyz="-0.00337704" izz="0.125507"/>
+    </inertial>
+    <!-- Part part1__cut_extrude2 -->
+    <visual>
+      <origin xyz="-0.0572971 0.00600598 0.000999998" rpy="-3.14159 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/part1__cut_extrude2.stl"/>
+      </geometry>
+      <material name="part1__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0572971 0.00600598 0.000999998" rpy="-3.14159 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/part1__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 3030_extrusion_robotic_arm_l2__boss_extrude1 -->
+    <visual>
+      <origin xyz="-0.0353855 -0.0439935 -0.0240005" rpy="-1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l2__boss_extrude1.stl"/>
+      </geometry>
+      <material name="3030_extrusion_robotic_arm_l2__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0353855 -0.0439935 -0.0240005" rpy="-1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/3030_extrusion_robotic_arm_l2__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bearing_12__boss_extrude1_6 -->
+    <visual>
+      <origin xyz="-0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+      <material name="bearing_12__boss_extrude1_6_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0 0 -0.008" rpy="1.5708 -0 -0"/>
+      <geometry>
+        <mesh filename="package://assets/bearing_12__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__2_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__2_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part grip_of_gripper__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.704514 -0.0941218 -0.106488" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/grip_of_gripper__boss_extrude2.stl"/>
+      </geometry>
+      <material name="grip_of_gripper__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.704514 -0.0941218 -0.106488" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/grip_of_gripper__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1 -->
+    <visual>
+      <origin xyz="0.31587 -0.345714 -0.105236" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.31587 -0.345714 -0.105236" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ms_rod_7_mm__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.312955 -0.366302 -0.0489174" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/ms_rod_7_mm__boss_extrude1.stl"/>
+      </geometry>
+      <material name="ms_rod_7_mm__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.312955 -0.366302 -0.0489174" rpy="-1.79043 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/ms_rod_7_mm__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1_2 -->
+    <visual>
+      <origin xyz="0.324261 -0.354261 -0.12052" rpy="1.44963 0.0269747 -2.39977"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.324261 -0.354261 -0.12052" rpy="1.44963 0.0269747 -2.39977"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ra_gripper_beval__revolve1_1_3 -->
+    <visual>
+      <origin xyz="0.325961 -0.357204 -0.0932705" rpy="-1.59797 -0.121117 2.3159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+      <material name="ra_gripper_beval__revolve1_1_3_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.325961 -0.357204 -0.0932705" rpy="-1.59797 -0.121117 2.3159"/>
+      <geometry>
+        <mesh filename="package://assets/ra_gripper_beval__revolve1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__3_1 -->
+    <visual>
+      <origin xyz="0.316798 -0.36253 -0.0513516" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__3_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.316798 -0.36253 -0.0513516" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part lovejoy_coupling__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.584887 -0.0513133 0.0929112" rpy="-1.53195 -0 2.97806"/>
+      <geometry>
+        <mesh filename="package://assets/lovejoy_coupling__boss_extrude1.stl"/>
+      </geometry>
+      <material name="lovejoy_coupling__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.584887 -0.0513133 0.0929112" rpy="-1.53195 -0 2.97806"/>
+      <geometry>
+        <mesh filename="package://assets/lovejoy_coupling__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1 -->
+    <visual>
+      <origin xyz="0.549121 -0.0500173 -0.0240005" rpy="3.14159 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1.stl"/>
+      </geometry>
+      <material name="ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.549121 -0.0500173 -0.0240005" rpy="3.14159 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/ms_plate_5mm__csk_for_m5_countersunk_flat_head_screw1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__1_1 -->
+    <visual>
+      <origin xyz="0.325155 -0.352247 -0.0391389" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__1_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.325155 -0.352247 -0.0391389" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part main_part__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.00150054" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/main_part__cut_extrude1.stl"/>
+      </geometry>
+      <material name="main_part__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.00150054" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/main_part__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__1_1_2 -->
+    <visual>
+      <origin xyz="0.315414 -0.369064 -0.0409735" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__1_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.315414 -0.369064 -0.0409735" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__1_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part bevel_rotating__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.539254 -0.0483892 -0.0240005" rpy="-3.14159 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/bevel_rotating__cut_extrude1.stl"/>
+      </geometry>
+      <material name="bevel_rotating__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.539254 -0.0483892 -0.0240005" rpy="-3.14159 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/bevel_rotating__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__2_1_2 -->
+    <visual>
+      <origin xyz="0.318362 -0.366449 -0.0510209" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__2_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.318362 -0.366449 -0.0510209" rpy="-1.89688 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__2_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_plate_gripper_bearing_housing__boss_extrude2 -->
+    <visual>
+      <origin xyz="0.587847 -0.061013 -0.140912" rpy="-3.14159 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/side_plate_gripper_bearing_housing__boss_extrude2.stl"/>
+      </geometry>
+      <material name="side_plate_gripper_bearing_housing__boss_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.587847 -0.061013 -0.140912" rpy="-3.14159 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/side_plate_gripper_bearing_housing__boss_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part main_part__cut_extrude1_2 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.0515005" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/main_part__cut_extrude1.stl"/>
+      </geometry>
+      <material name="main_part__cut_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.0515005" rpy="1.5708 0 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/main_part__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__3_1_2 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__3_1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__3_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part base_plate__cut_extrude1 -->
+    <visual>
+      <origin xyz="0.474615 -0.0439935 -0.0240005" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/base_plate__cut_extrude1.stl"/>
+      </geometry>
+      <material name="base_plate__cut_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.474615 -0.0439935 -0.0240005" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://assets/base_plate__cut_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_motor_mounting__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 0.0634995" rpy="3.14159 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="side_motor_mounting__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 0.0634995" rpy="3.14159 -0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_motor_mounting__boss_extrude1_2 -->
+    <visual>
+      <origin xyz="0.512615 -0.0439935 -0.111501" rpy="-0 -0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+      <material name="side_motor_mounting__boss_extrude1_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.512615 -0.0439935 -0.111501" rpy="-0 -0 -1.5708"/>
+      <geometry>
+        <mesh filename="package://assets/side_motor_mounting__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__5_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__5_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__5_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__5_1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part 120mm_lead_screw__boss_extrude1 -->
+    <visual>
+      <origin xyz="0.583306 -0.0608935 -0.1569" rpy="1.5708 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/120mm_lead_screw__boss_extrude1.stl"/>
+      </geometry>
+      <material name="120mm_lead_screw__boss_extrude1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.583306 -0.0608935 -0.1569" rpy="1.5708 0.0388487 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/120mm_lead_screw__boss_extrude1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part gripper_arm__cut_extrude2 -->
+    <visual>
+      <origin xyz="0.55649 -0.0698493 -0.110352" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+      <material name="gripper_arm__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.55649 -0.0698493 -0.110352" rpy="-3.14159 -1.53195 1.40726"/>
+      <geometry>
+        <mesh filename="package://assets/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part side_plate_gripper__cut_extrude2 -->
+    <visual>
+      <origin xyz="0.589327 -0.0520459 0.0929112" rpy="-0 -0.0388487 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/side_plate_gripper__cut_extrude2.stl"/>
+      </geometry>
+      <material name="side_plate_gripper__cut_extrude2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.589327 -0.0520459 0.0929112" rpy="-0 -0.0388487 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/side_plate_gripper__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part gripper_arm__cut_extrude2_2 -->
+    <visual>
+      <origin xyz="0.562088 -0.0359257 0.0018133" rpy="-0 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+      <material name="gripper_arm__cut_extrude2_2_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.562088 -0.0359257 0.0018133" rpy="-0 1.53195 -1.73433"/>
+      <geometry>
+        <mesh filename="package://assets/gripper_arm__cut_extrude2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part id_25_od_32_61705__4_1 -->
+    <visual>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__4_1.stl"/>
+      </geometry>
+      <material name="id_25_od_32_61705__4_1_material">
+        <color rgba="0.792157 0.819608 0.933333 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.327464 -0.359806 -0.0691875" rpy="-2.2687 1.44668 2.09462"/>
+      <geometry>
+        <mesh filename="package://assets/id_25_od_32_61705__4_1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Joint from ra_4__boss_extrude1 to gripper__1 -->
+  <joint name="L2" type="revolute">
+    <origin xyz="0.549472 -0.0124995 -0.0920011" rpy="-3.14159 0 -2.44323"/>
+    <parent link="ra_4__boss_extrude1"/>
+    <child link="gripper__1"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-2.09621" upper="0"/>
+  </joint>
+  <!-- Joint from ra_3__boss_extrude1 to ra_4__boss_extrude1 -->
+  <joint name="l1End" type="revolute">
+    <origin xyz="0.103176 0.07 -0.035" rpy="-1.5708 1.39626 0"/>
+    <parent link="ra_3__boss_extrude1"/>
+    <child link="ra_4__boss_extrude1"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1.22173" upper="0"/>
+  </joint>
+  <!-- Joint from robotic_arm_base_plate__boss_extrude2 to ra_3__boss_extrude1 -->
+  <joint name="360" type="revolute">
+    <origin xyz="0.00161347 -0.00128579 0.0411599" rpy="-3.13139 0.0105473 -1.45303"/>
+    <parent link="robotic_arm_base_plate__boss_extrude2"/>
+    <child link="ra_3__boss_extrude1"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-3.141592653589793" upper="3.141592653589793"/>
+  </joint>
+</robot>

@@ -14,6 +14,7 @@ class TrajectoryExecutor:
         self.command_callback = command_callback
         self.is_executing = False
         self.stop_requested = False
+        self.last_error: Optional[str] = None
 
     def execute(
         self,
@@ -32,6 +33,7 @@ class TrajectoryExecutor:
 
         self.is_executing = True
         self.stop_requested = False
+        self.last_error = None
         start_time = time.monotonic()
 
         try:
@@ -55,7 +57,8 @@ class TrajectoryExecutor:
 
             return True
 
-        except Exception:
+        except Exception as exc:
+            self.last_error = f"{type(exc).__name__}: {exc}"
             return False
 
         finally:

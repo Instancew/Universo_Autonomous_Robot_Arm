@@ -31,9 +31,18 @@ class MissionManager:
             success = execute()
 
             if success:
-                self.state_machine.transition(AutonomyState.READY)
+                if self.state_machine.transition(AutonomyState.READY):
+                    self.current_mission = None
+                    return True
+
+                # The mission finished, but the state machine was moved elsewhere meanwhile
+                # (for example EMERGENCY_STOP): do not report success.
+                self.last_error = (
+                    f"Mission '{name}' finished but the autonomy state is "
+                    f"'{self.state_machine.state.value}', not 'executing_mission'."
+                )
                 self.current_mission = None
-                return True
+                return False
 
             self.last_error = f"Mission '{name}' failed."
 

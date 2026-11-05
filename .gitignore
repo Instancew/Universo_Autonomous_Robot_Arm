@@ -12,3 +12,7 @@ __pycache__/
 *.bak
 *.swp
 *~
+
+# Onshape export metadata (onshape-to-robot) and editor settings
+*.part
+.vscode/

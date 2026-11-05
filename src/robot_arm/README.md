@@ -1,6 +1,11 @@
 # Autonomous Robot Arm — ROS 2 Humble Project Structure
 
-This ZIP provides a **starter directory structure and documentation**, not a finished or hardware-ready robot controller. Most Python modules are safe placeholders with TODOs; they do not command motors.
+Not a hardware-ready controller yet: nothing here commands the real motors.
+
+Status (5 Nov 2026):
+- Implemented and tested: URDF/meshes (`description/`), calibration (`calibration/`), kinematics (`kinematics/`), joystick teleop and simulation (`teleop/`, `launch/`), autonomy / mission / motion skeleton classes.
+- Placeholders: `hardware/`, `perception/`, `safety/` (emergency stop, fault handler, safety manager), `logging_tools/`, `launch/bringup.launch.py`, `calibration/camera_calibration.py`.
+- Joint conventions differ between `kinematics/` and the URDF: see `docs/conventions.md`.
 
 ## Target system
 - ROS 2 Humble
